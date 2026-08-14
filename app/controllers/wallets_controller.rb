@@ -8,10 +8,20 @@ class WalletsController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [ :withdraw, :update_pix_key, :deposit, :reconcile ]
   before_action :authenticate_for_mobile!
   before_action :set_wallet
+  # Toda leitura da carteira concilia os depósitos pendentes ANTES de responder.
+  # O webhook do Mercado Pago é otimização, não dependência: se a notificação não
+  # chega (URL errada, deploy fora do ar, MP atrasado), o saldo ainda assim
+  # aparece — quem abre a carteira recebe o estado real consultado no MP.
+  before_action :reconcile_pending_deposits!, only: [ :show, :transactions, :reconcile ]
+  before_action :disable_caching!, only: [ :show, :transactions, :reconcile ]
 
-  # Teto por requisição em #reconcile: cada item vira pelo menos uma chamada HTTP
-  # ao Mercado Pago e este endpoint responde de forma síncrona.
+  # Teto por requisição: cada item vira pelo menos uma chamada HTTP ao Mercado
+  # Pago e estes endpoints respondem de forma síncrona.
   MAX_RECONCILE_PER_REQUEST = 10
+
+  # Evita martelar a API do MP quando o usuário fica atualizando a tela com um
+  # PIX ainda não pago (o QR Code vive 24h). #reconcile ignora esta janela.
+  RECONCILE_THROTTLE = 20.seconds
 
   # GET /wallet
   def show
@@ -69,25 +79,10 @@ class WalletsController < ApplicationController
   end
 
   # POST /wallet/reconcile
-  # Chamado pela tela da carteira quando o usuário volta do checkout do Mercado
-  # Pago (/carteira?deposito=success|pending). Pergunta ao MP o estado real dos
-  # depósitos ainda não creditados deste usuário e credita os já aprovados —
-  # assim o saldo aparece na hora mesmo que a notificação de webhook se perca,
-  # sem esperar o ReconcilePendingDepositsJob.
+  # Conciliação forçada (ignora o throttle), usada no retorno do checkout e por
+  # um botão de "atualizar" na tela. A conciliação em si roda no before_action.
   def reconcile
-    pending = ReconcilePendingDepositsJob.pending_scope
-                                         .where(user_id: mobile_current_user.id)
-                                         .limit(MAX_RECONCILE_PER_REQUEST)
-                                         .to_a
-
-    pending.each do |payment|
-      WalletDepositService.sync!(payment)
-    rescue StandardError => e
-      Rails.logger.error "[WalletsController] Falha ao conciliar payment=#{payment.id}: #{e.class}: #{e.message}"
-    end
-
-    @wallet.reload
-    render json: wallet_json.merge(reconciled: pending.size)
+    render json: wallet_json.merge(reconciled: @reconciled_count.to_i)
   end
 
   # PATCH /wallet/update_pix_key
@@ -134,6 +129,54 @@ class WalletsController < ApplicationController
 
   def set_wallet
     @wallet = mobile_current_user.wallet || mobile_current_user.create_wallet!
+  end
+
+  # Pergunta ao Mercado Pago o estado real de cada depósito ainda não creditado
+  # e credita os aprovados. A consulta ao MP só acontece quando existe depósito
+  # pendente (um `exists?` barato decide), então a carteira sem pendências
+  # continua respondendo sem nenhuma chamada externa.
+  def reconcile_pending_deposits!
+    @reconciled_count = 0
+
+    pending = ReconcilePendingDepositsJob.pending_scope
+                                         .where(user_id: mobile_current_user.id)
+                                         .limit(MAX_RECONCILE_PER_REQUEST)
+                                         .to_a
+    return if pending.empty?
+    return if throttled?
+
+    pending.each do |payment|
+      WalletDepositService.sync!(payment)
+      @reconciled_count += 1
+    rescue StandardError => e
+      # Falha de rede/credencial não pode impedir o usuário de ver o saldo.
+      Rails.logger.error "[WalletsController] Falha ao conciliar payment=#{payment.id}: #{e.class}: #{e.message}"
+    end
+
+    @wallet.reload
+  end
+
+  # #reconcile é explícito (retorno do checkout, pull-to-refresh): sempre passa.
+  # #show e #transactions são automáticos e podem ser chamados em rajada.
+  def throttled?
+    return false if action_name == "reconcile"
+
+    key = "wallet_reconcile/#{mobile_current_user.id}"
+    return true if Rails.cache.read(key)
+
+    Rails.cache.write(key, true, expires_in: RECONCILE_THROTTLE)
+    false
+  rescue StandardError => e
+    Rails.logger.warn "[WalletsController] Cache indisponível para o throttle de conciliação: #{e.class}: #{e.message}"
+    false
+  end
+
+  # Saldo é dado vivo: um 304 servindo corpo antigo do cache do navegador faria o
+  # usuário ver R$ 0,00 depois de o depósito já ter sido creditado.
+  def disable_caching!
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"]        = "no-cache"
+    response.headers["Expires"]       = "0"
   end
 
   def wallet_json

@@ -24,16 +24,19 @@ export default class extends Controller {
   selectedKeyType = null
 
   connect() {
-    // Voltando do checkout do Mercado Pago (back_urls -> /carteira?deposito=...):
-    // pede a conciliação antes de ler o saldo. O webhook pode não ter chegado
-    // ainda — ou ter se perdido — e sem isto a tela mostraria o saldo antigo.
+    this.load()
+  }
+
+  // Em série, não em paralelo: GET /wallet concilia os depósitos pendentes contra
+  // o Mercado Pago antes de responder, e o extrato precisa ser lido DEPOIS disso —
+  // senão o saldo aparece atualizado e o histórico ainda vem sem o depósito.
+  async load() {
     if (this.returningFromCheckout() && this.hasReconcileUrlValue) {
-      this.reconcileThenLoad()
-      return
+      await this.forceReconcile()
     }
 
-    if (this.hasBalanceTarget || this.hasAmountInputTarget) this.loadWallet()
-    if (this.hasHistoryTarget) this.loadTransactions()
+    if (this.hasBalanceTarget || this.hasAmountInputTarget) await this.loadWallet()
+    if (this.hasHistoryTarget) await this.loadTransactions()
   }
 
   returningFromCheckout() {
@@ -41,18 +44,17 @@ export default class extends Controller {
     return deposito === "success" || deposito === "pending"
   }
 
-  async reconcileThenLoad() {
+  // Conciliação explícita: ignora o throttle do servidor. Vale a pena no retorno
+  // do checkout, quando o PIX pode ter compensado segundos atrás.
+  async forceReconcile() {
     try {
       await fetch(this.reconcileUrlValue, {
         method: "POST",
         headers: { Accept: "application/json", "X-CSRF-Token": this.csrfToken() }
       })
     } catch (e) {
+      // A conciliação é reforço, não pré-requisito: seguimos para ler o saldo.
       console.error("[Wallet] reconcile falhou:", e)
-    } finally {
-      // Sempre carrega o saldo: a conciliação é um reforço, não um pré-requisito.
-      await this.loadWallet()
-      if (this.hasHistoryTarget) this.loadTransactions()
     }
   }
 

@@ -32,6 +32,44 @@ RSpec.describe "Wallets", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["balance_cents"]).to eq(4_200)
     end
+
+    # O ponto central da correção: abrir a carteira já concilia contra o Mercado
+    # Pago. Sem isso o saldo só subia se o webhook chegasse — e ele pode nunca chegar.
+    it "credits an uncredited deposit before answering" do
+      sign_in user, scope: :user
+      pending_deposit = deposit(state: "pending")
+
+      allow(WalletDepositService).to receive(:sync!) do |p|
+        p.user.wallet.update!(balance_cents: 500)
+      end
+      user.create_wallet!(balance_cents: 0)
+
+      get "/wallet", headers: json_headers
+
+      expect(WalletDepositService).to have_received(:sync!).with(pending_deposit)
+      expect(response.parsed_body["balance_cents"]).to eq(500)
+    end
+
+    it "does not call Mercado Pago when there is nothing pending" do
+      sign_in user, scope: :user
+      user.create_wallet!(balance_cents: 4_200)
+      allow(WalletDepositService).to receive(:sync!)
+
+      get "/wallet", headers: json_headers
+
+      expect(WalletDepositService).not_to have_received(:sync!)
+    end
+
+    # Saldo é dado vivo — um 304 servindo corpo antigo mostraria R$ 0,00 depois
+    # de o depósito já ter sido creditado.
+    it "forbids caching the balance" do
+      sign_in user, scope: :user
+      user.create_wallet!(balance_cents: 4_200)
+
+      get "/wallet", headers: json_headers
+
+      expect(response.headers["Cache-Control"]).to include("no-store")
+    end
   end
 
   describe "GET /wallet/transactions" do

@@ -167,27 +167,58 @@ class WalletDepositService
     payment
   end
 
-  # Procura o pagamento no MP primeiro pelo id já conhecido e, se não houver,
-  # pela busca por external_reference (que é o UUID do Payment local). A busca é
-  # necessária porque um depósito que nunca recebeu webhook não tem
-  # mercado_pago_payment_id gravado.
+  # Três caminhos para achar o pagamento no MP, do mais direto ao mais robusto.
+  # Nenhum depende do webhook — é isso que faz o saldo convergir mesmo quando a
+  # notificação nunca chega (notification_url errada, deploy fora do ar, etc.).
   def self.remote_payment_for(payment)
-    if payment.mercado_pago_payment_id.present?
-      found = normalize(class_sdk.payment.get(payment.mercado_pago_payment_id))
-      return found if found.present?
-    end
-
-    results = normalize(class_sdk.payment.search(filters: { external_reference: payment.id.to_s }))
-    candidates = Array(results["results"])
-    return nil if candidates.empty?
-
-    # Um mesmo checkout pode gerar várias tentativas — a aprovada é a que importa.
-    candidates.find { |c| APPROVED_STATUSES.include?(c["status"].to_s) } || candidates.max_by { |c| c["date_created"].to_s }
+    by_known_id(payment) || by_external_reference(payment) || by_merchant_order(payment)
   rescue => e
     Rails.logger.error "[WalletDepositService] Falha ao consultar o MP para payment=#{payment.id}: #{e.class}: #{e.message}"
     nil
   end
   private_class_method :remote_payment_for
+
+  # 1) Já sabemos o id do pagamento (uma notificação anterior chegou).
+  def self.by_known_id(payment)
+    return nil if payment.mercado_pago_payment_id.blank?
+
+    normalize(class_sdk.payment.get(payment.mercado_pago_payment_id)).presence
+  end
+  private_class_method :by_known_id
+
+  # 2) Busca pelo external_reference que gravamos na preferência (UUID do Payment).
+  def self.by_external_reference(payment)
+    results = normalize(class_sdk.payment.search(filters: { external_reference: payment.id.to_s }))
+    best_candidate(Array(results["results"]))
+  end
+  private_class_method :by_external_reference
+
+  # 3) Rede final: o Checkout Pro cria uma merchant_order por preferência, e ela
+  # lista os pagamentos. Cobre os casos em que o external_reference não é
+  # propagado para o pagamento (acontece com alguns meios, PIX incluído).
+  def self.by_merchant_order(payment)
+    return nil if payment.mercado_pago_preference_id.blank?
+
+    orders = normalize(class_sdk.merchant_order.search(filters: { preference_id: payment.mercado_pago_preference_id }))
+    order  = Array(orders["elements"]).first
+    return nil if order.blank?
+
+    # A order traz os pagamentos resumidos; buscamos o completo para ter o payload inteiro.
+    summary = best_candidate(Array(order["payments"]))
+    return nil if summary.blank?
+
+    normalize(class_sdk.payment.get(summary["id"])).presence || summary
+  end
+  private_class_method :by_merchant_order
+
+  # Um mesmo checkout pode gerar várias tentativas — a aprovada é a que importa.
+  def self.best_candidate(candidates)
+    return nil if candidates.empty?
+
+    candidates.find { |c| APPROVED_STATUSES.include?(c["status"].to_s) } ||
+      candidates.max_by { |c| c["date_created"].to_s }
+  end
+  private_class_method :best_candidate
 
   def self.class_sdk
     token = ENV["MERCADO_PAGO_ACCESS_TOKEN"].presence ||
@@ -230,6 +261,8 @@ class WalletDepositService
   end
 
   def create_mp_preference!
+    log_notification_target!
+
     result   = sdk.preference.create(build_preference_payload)
     response = normalize_response(result)
 
@@ -290,6 +323,19 @@ class WalletDepositService
 
   def notification_url
     "#{base_url.to_s.delete_suffix('/')}/webhooks/mercado_pago"
+  end
+
+  # Sem APP_BASE_URL o fallback é o host fixo de config/environments/production.rb.
+  # Num ambiente com mais de um deploy (staging, preview do Render) isso aponta o
+  # webhook para OUTRA instância e a notificação nunca chega neste app — falha
+  # silenciosa que só aparece como "paguei o PIX e o saldo não subiu".
+  def log_notification_target!
+    if ENV["APP_BASE_URL"].blank?
+      Rails.logger.warn "[WalletDepositService] APP_BASE_URL não configurado — usando fallback #{base_url.inspect}. " \
+                        "Confirme que #{notification_url} aponta para ESTE deploy."
+    else
+      Rails.logger.info "[WalletDepositService] notification_url=#{notification_url}"
+    end
   end
 
   def normalize_response(result)
