@@ -677,6 +677,7 @@ DEPENDENCIES
   enumerize
   factory_bot_rails
   faker
+  faraday
   fcm
   fiddle
   geocoder

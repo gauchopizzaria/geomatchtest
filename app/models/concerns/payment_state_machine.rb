@@ -39,6 +39,14 @@ module PaymentStateMachine
 
       if one_off_message?
         user.add_message_credit!
+      elsif mimo_purchase?
+        # Nada a fazer aqui: MimoPaymentService.complete! (chamado pelo
+        # WebhookService) é quem credita a carteira do destinatário — um
+        # Mimo não tem plano/assinatura envolvido.
+      elsif wallet_deposit?
+        # Nada a fazer aqui: WalletDepositService.complete! (chamado pelo
+        # WebhookService) é quem credita o saldo do próprio usuário — um
+        # depósito não tem plano/assinatura envolvido.
       else
         sync_user_plan_from_payment!
       end

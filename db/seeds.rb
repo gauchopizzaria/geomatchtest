@@ -86,3 +86,6 @@ Coupon.find_or_create_by!(code: 'PRIMEIROACESSO') do |coupon|
   coupon.active        = true
 end
 puts "Cupom 'PRIMEIROACESSO' criado/verificado."
+
+# 5. Catálogo de Mimos (presentes virtuais) — arquivo à parte, ver db/seeds/mimos.rb
+load Rails.root.join("db", "seeds", "mimos.rb")

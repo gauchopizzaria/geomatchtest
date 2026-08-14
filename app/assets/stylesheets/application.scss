@@ -29,6 +29,7 @@
 @use "chat_menu";
 @use "block_confirm_modal";
 @use "crop_screen";
+@use "mimo";
 
 // Leaflet CSS é carregado via CDN no layout (application.html.erb).
 // @import de .css em DartSass gera browser-level @import — propshaft não serve node_modules.

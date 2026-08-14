@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_31_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -191,11 +191,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
     t.index ["sender_id"], name: "index_messages_on_sender_id"
   end
 
+  create_table "mimo_items", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "icon"
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "price_cents", default: 0, null: false
+    t.string "price_currency", default: "BRL", null: false
+    t.integer "receiver_value_cents", default: 0, null: false
+    t.string "receiver_value_currency", default: "BRL", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_mimo_items_on_active"
+    t.index ["name"], name: "index_mimo_items_on_name", unique: true
+    t.index ["position"], name: "index_mimo_items_on_position"
+  end
+
+  create_table "mimo_transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "claimed_at"
+    t.datetime "created_at", null: false
+    t.string "invite_token"
+    t.text "message"
+    t.bigint "mimo_item_id", null: false
+    t.integer "mp_fee_cents", default: 0, null: false
+    t.uuid "payment_id"
+    t.integer "platform_fee_cents", default: 0, null: false
+    t.integer "price_cents", null: false
+    t.string "price_currency", default: "BRL", null: false
+    t.bigint "receiver_id"
+    t.string "receiver_phone"
+    t.integer "receiver_value_cents", null: false
+    t.string "receiver_value_currency", default: "BRL", null: false
+    t.bigint "sender_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_mimo_transactions_on_created_at"
+    t.index ["invite_token"], name: "index_mimo_transactions_on_invite_token", unique: true
+    t.index ["mimo_item_id"], name: "index_mimo_transactions_on_mimo_item_id"
+    t.index ["payment_id"], name: "index_mimo_transactions_on_payment_id", unique: true
+    t.index ["receiver_id"], name: "index_mimo_transactions_on_receiver_id"
+    t.index ["receiver_phone"], name: "index_mimo_transactions_on_receiver_phone"
+    t.index ["sender_id", "receiver_id"], name: "index_mimo_transactions_on_sender_id_and_receiver_id"
+    t.index ["sender_id"], name: "index_mimo_transactions_on_sender_id"
+    t.index ["status"], name: "index_mimo_transactions_on_status"
+  end
+
   create_table "notifications", force: :cascade do |t|
     t.string "action"
     t.bigint "actor_id", null: false
     t.datetime "created_at", null: false
-    t.bigint "notifiable_id", null: false
+    t.string "notifiable_id", null: false
     t.string "notifiable_type", null: false
     t.datetime "read_at"
     t.bigint "recipient_id", null: false
@@ -208,6 +254,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
 
   create_table "payments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.integer "deposit_amount_cents"
+    t.string "deposit_amount_currency", default: "BRL"
     t.string "mercado_pago_checkout_url"
     t.string "mercado_pago_merchant_order_id"
     t.jsonb "mercado_pago_payload"
@@ -460,6 +508,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
     t.index ["user_id"], name: "index_user_coupons_on_user_id"
   end
 
+  create_table "user_wallets", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "balance_cents", default: 0, null: false
+    t.string "balance_currency", default: "BRL", null: false
+    t.datetime "created_at", null: false
+    t.integer "lifetime_earned_cents", default: 0, null: false
+    t.integer "lifetime_withdrawn_cents", default: 0, null: false
+    t.integer "pending_withdrawal_cents", default: 0, null: false
+    t.string "pix_key"
+    t.string "pix_key_type"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_user_wallets_on_user_id", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "address"
     t.boolean "admin", default: false, null: false
@@ -522,6 +584,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
     t.index ["username"], name: "index_users_on_username"
   end
 
+  create_table "wallet_reconciliations", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "actual_balance_cents", null: false
+    t.datetime "created_at", null: false
+    t.integer "discrepancy_cents", default: 0, null: false
+    t.integer "expected_balance_cents", null: false
+    t.text "notes"
+    t.datetime "reconciled_at"
+    t.bigint "reconciled_by_id"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_wallet_id", null: false
+    t.index ["discrepancy_cents"], name: "index_wallet_reconciliations_on_discrepancy_cents"
+    t.index ["reconciled_by_id"], name: "index_wallet_reconciliations_on_reconciled_by_id"
+    t.index ["status"], name: "index_wallet_reconciliations_on_status"
+    t.index ["user_wallet_id"], name: "index_wallet_reconciliations_on_user_wallet_id"
+  end
+
   create_table "webhook_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "action"
     t.integer "attempts", default: 0
@@ -539,6 +618,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
     t.index ["status"], name: "index_webhook_events_on_status"
   end
 
+  create_table "withdrawal_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "admin_notes"
+    t.integer "amount_cents", null: false
+    t.string "amount_currency", default: "BRL", null: false
+    t.datetime "created_at", null: false
+    t.string "pix_key"
+    t.string "pix_key_type"
+    t.datetime "processed_at"
+    t.bigint "processed_by_id"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["processed_by_id"], name: "index_withdrawal_requests_on_processed_by_id"
+    t.index ["status"], name: "index_withdrawal_requests_on_status"
+    t.index ["user_id"], name: "index_withdrawal_requests_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "blocks", "users", column: "blocked_id"
@@ -554,6 +650,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
   add_foreign_key "matches", "users", column: "matched_user_id"
   add_foreign_key "messages", "matches"
   add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "mimo_transactions", "mimo_items"
+  add_foreign_key "mimo_transactions", "payments"
+  add_foreign_key "mimo_transactions", "users", column: "receiver_id"
+  add_foreign_key "mimo_transactions", "users", column: "sender_id"
   add_foreign_key "notifications", "users", column: "actor_id"
   add_foreign_key "notifications", "users", column: "recipient_id"
   add_foreign_key "payments", "plans"
@@ -572,5 +672,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
   add_foreign_key "stories", "users"
   add_foreign_key "user_coupons", "coupons"
   add_foreign_key "user_coupons", "users"
+  add_foreign_key "user_wallets", "users"
   add_foreign_key "users", "plans"
+  add_foreign_key "wallet_reconciliations", "user_wallets"
+  add_foreign_key "wallet_reconciliations", "users", column: "reconciled_by_id"
+  add_foreign_key "withdrawal_requests", "users"
+  add_foreign_key "withdrawal_requests", "users", column: "processed_by_id"
 end

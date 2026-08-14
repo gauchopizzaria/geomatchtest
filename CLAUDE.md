@@ -268,6 +268,15 @@ APNS_KEY_ID   # 10 caracteres, identificador da chave .p8 no Apple Developer Por
 APNS_TEAM_ID  # 10 caracteres, identificador do time Apple Developer
 APNS_ENV      # "production" (default) ou "development" — seleciona endpoint do APNs
 APNS_TOPIC    # Bundle ID do app iOS (default: br.com.geomatch.app)
+FCM_PROJECT_ID # Firebase Cloud Messaging (push Android) — usa firebase-credentials.json na raiz
+
+# Mimos (presentes virtuais — ver app/services/mimo_*.rb, mp_transfer_service.rb, withdrawal_service.rb)
+MERCADO_PAGO_OPERATIONAL_ACCOUNT_ID  # Conta MP "operacional" (recebe checkouts) — MpTransferService
+MERCADO_PAGO_POOL_ACCOUNT_ID         # Conta MP "bolsão" (lastreia saldo sacável dos usuários) — MpTransferService
+SMS_PROVIDER_URL                     # Endpoint HTTP do provedor de SMS — MimoInviteService
+SMS_PROVIDER_API_KEY                 # Bearer token do provedor de SMS — MimoInviteService
+# Todas ausentes por padrão: as features acima degradam graciosamente (logam e
+# pulam) em vez de quebrar o fluxo principal, seguindo o padrão de PushNotificationJob.
 ```
 
 ---

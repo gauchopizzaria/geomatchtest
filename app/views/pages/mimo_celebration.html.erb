@@ -1,0 +1,38 @@
+<%# Lottie carregado só nesta view (web component <lottie-player>), fora do
+    bundle esbuild global — mesmo padrão já usado para Mapbox/Turf.js no layout:
+    lib de terceiros pontual entra via <script> na página que a usa, não no JS
+    compartilhado por todo o app. %>
+<% content_for :head do %>
+  <script type="module" src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
+<% end %>
+
+<div class="gm-mimo-wrapper" data-controller="mimo" data-mimo-celebrate-value="true">
+  <div class="gm-mimo-celebrate">
+    <div class="gm-mimo-lottie-stage" data-mimo-target="lottieStage">
+      <%# src aponta para um asset local (fornecido pelo time de design, em
+          app/assets/images/ — mesmo load path já usado por PNG/SVG do projeto).
+          Enquanto o arquivo real não existir, o player não renderiza nada e o
+          fallback estático abaixo assume visualmente (ver mimo_controller.js). %>
+      <lottie-player
+        src="<%= asset_path('mimo_celebration.lottie.json') rescue '' %>"
+        background="transparent"
+        speed="1"
+        autoplay
+        data-mimo-target="lottiePlayer">
+      </lottie-player>
+      <div class="gm-mimo-gift-fallback" data-mimo-target="fallback" style="display:none">🎁</div>
+    </div>
+
+    <div class="gm-mimo-celeb-title">Você recebeu um Mimo!</div>
+    <div class="gm-mimo-celeb-sub"><%= @mimo_transaction.mimo_item.name %></div>
+    <div class="gm-mimo-celeb-from">De: <%= @mimo_transaction.sender.display_name %></div>
+
+    <% if @mimo_transaction.message.present? %>
+      <p class="gm-mimo-celeb-message">"<%= @mimo_transaction.message %>"</p>
+    <% end %>
+
+    <div class="gm-mimo-celeb-cta">
+      <%= link_to "Ver carteira", mimo_wallet_page_path, class: "gm-mimo-btn gm-mimo-btn--gold" %>
+    </div>
+  </div>
+</div>

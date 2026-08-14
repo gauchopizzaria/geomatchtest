@@ -17,3 +17,7 @@ production:
     class: ExpireSubscriptionsJob
     queue: default
     schedule: every day at 3am
+  bolsao_reconciliation:
+    class: BolsaoReconciliationJob
+    queue: default
+    schedule: every day at 3am

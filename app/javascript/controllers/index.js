@@ -57,3 +57,9 @@ application.register("gender-filter", GenderFilterController)
 
 import VisibilityToggleController from "./visibility_toggle_controller"
 application.register("visibility-toggle", VisibilityToggleController)
+
+import MimoController from "./mimo_controller"
+application.register("mimo", MimoController)
+
+import WalletController from "./wallet_controller"
+application.register("wallet", WalletController)

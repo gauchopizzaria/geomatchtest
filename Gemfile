@@ -24,6 +24,9 @@ gem "kaminari"
 gem "letter_opener_web", group: :development
 gem "mercadopago-sdk"
 gem "money-rails"
+# Já vinha no bundle como dependência transitiva (fcm, cloudinary); declarada aqui
+# porque MpTransferService a usa diretamente para chamar /v1/transfers do MP.
+gem "faraday"
 gem "pg", "~> 1.1"
 gem "propshaft"
 gem "puma", ">= 5.0"

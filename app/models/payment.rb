@@ -7,8 +7,18 @@ class Payment < ApplicationRecord
   enum :payment_type, {
     plan_purchase:  'plan_purchase',
     one_off_message: 'one_off_message',
-    admin_grant:    'admin_grant'        # Cortesia / ajuste manual pelo administrador
+    admin_grant:    'admin_grant',       # Cortesia / ajuste manual pelo administrador
+    mimo_purchase:  'mimo_purchase',     # Compra de um Mimo (presente virtual) para outro usuário
+    wallet_deposit: 'wallet_deposit'     # Adicionar saldo à própria UserWallet (ver WalletDepositService)
   }
+
+  # Nome próprio (não "amount") para não colidir com o método #amount abaixo,
+  # que já é a fonte de verdade para plan_purchase/admin_grant.
+  monetize :deposit_amount_cents, as: "deposit_amount", allow_nil: true
+
+  # dependent: :nullify — o Payment é o registro financeiro "mestre" da cobrança;
+  # nunca deve ser destruído em cascata a partir da limpeza de uma MimoTransaction.
+  has_one :mimo_transaction, dependent: :nullify
 
   # Alias para que CheckoutController#create_one_off_message possa chamar payment.checkout_url
   alias_attribute :checkout_url, :mercado_pago_checkout_url

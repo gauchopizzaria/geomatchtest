@@ -136,6 +136,22 @@
     <% end %>
   <% end %>
 
+  <%# --- 3.5. CARTEIRA DIGITAL (Mimos) — acesso rápido a saldo e saques ---
+      wallet pode ser nil pra quem nunca recebeu um Mimo ainda (has_one, sem
+      criação automática) — &. + fallback garantem "R$ 0,00" em vez de erro. %>
+  <%= link_to mimo_wallet_page_path, class: "verification-banner" do %>
+    <div class="icon-box">
+      <span class="wallet-banner-icon">💰</span>
+    </div>
+    <div class="banner-text">
+      <strong>Minha Carteira</strong>
+      <p class="banner-description">
+        Saldo disponível: <strong class="wallet-banner-balance"><%= @user.wallet&.balance&.format || "R$ 0,00" %></strong>
+      </p>
+    </div>
+    <div class="banner-arrow">›</div>
+  <% end %>
+
   <%# --- 4. SEÇÃO DESTAQUE --- %>
   <div class="highlight-section">
     <div class="highlight-photo">

@@ -150,6 +150,29 @@ Rails.application.routes.draw do
   post "/webhooks/mercado_pago", to: "webhooks/mercado_pago#create", as: :mercado_pago_webhook
 
   # =================================================================
+  # 6b. MIMOS (presentes virtuais) E CARTEIRA
+  # =================================================================
+  get  "/mimo_items/catalog", to: "mimos#catalog", as: :mimo_items_catalog
+  # action `create` (não `send`): nomear uma action `send` sombrearia Kernel#send
+  # na instância do controller — mesmo cuidado já aplicado aos eventos AASM na Fase 2.
+  post "/mimo/send",          to: "mimos#create",           as: :send_mimo
+  post "/mimo/send_with_wallet", to: "mimos#send_with_wallet", as: :send_mimo_with_wallet
+
+  get   "/wallet",                to: "wallets#show",           as: :wallet
+  post  "/wallet/withdraw",       to: "wallets#withdraw",       as: :withdraw_wallet
+  post  "/wallet/deposit",        to: "wallets#deposit",        as: :deposit_wallet
+  patch "/wallet/update_pix_key", to: "wallets#update_pix_key", as: :update_wallet_pix_key
+  get   "/wallet/transactions",   to: "wallets#transactions",   as: :wallet_transactions
+
+  # --- Views HTML do fluxo de Mimos (consomem os endpoints JSON acima via fetch) ---
+  get "/mimos/catalogo",     to: "pages#mimo_catalog",     as: :mimo_catalog_page
+  get "/mimos/confirmar",    to: "pages#mimo_confirm",     as: :mimo_confirm_page
+  get "/mimos/recebido/:id", to: "pages#mimo_celebration", as: :mimo_celebration_page
+  get "/mimos/depositar",    to: "pages#mimo_deposit",     as: :mimo_deposit_page
+  get "/carteira",           to: "pages#mimo_wallet",      as: :mimo_wallet_page
+  get "/carteira/sacar",     to: "pages#mimo_withdraw",    as: :mimo_withdraw_page
+
+  # =================================================================
   # 7. SISTEMA
   # =================================================================
   mount ActionCable.server => '/cable'

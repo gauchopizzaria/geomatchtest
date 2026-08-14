@@ -22,7 +22,31 @@
       "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_turf.rb\"; \"EXIT: $LASTEXITCODE\")",
       "PowerShell(yarn build; \"JS: $LASTEXITCODE\"; ruby bin/rails dartsass:build; \"CSS: $LASTEXITCODE\"; ruby bin/rails assets:precompile 2>&1 | Select-Object -Last 1; \"PRECOMPILE: $LASTEXITCODE\")",
       "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_gallery_invisible.rb\"; \"EXIT: $LASTEXITCODE\")",
-      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_lead_tiers.rb\"; \"EXIT: $LASTEXITCODE\")"
+      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_lead_tiers.rb\"; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails generate model MimoItem name:string description:text icon:string price_cents:integer price_currency:string receiver_value_cents:integer receiver_value_currency:string active:boolean position:integer 2>&1; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails generate model UserWallet --primary-key-type=uuid user:references balance_cents:integer balance_currency:string pending_withdrawal_cents:integer lifetime_earned_cents:integer lifetime_withdrawn_cents:integer 2>&1; \"EXIT: $LASTEXITCODE\")",
+      "Bash(cd \"c:/Users/Brendo/Documents/DEV/geomatch ruby/geomatch\" && rm db/migrate/20260729210300_create_user_wallets.rb app/models/user_wallet.rb spec/models/user_wallet_spec.rb spec/factories/user_wallets.rb && echo \"removido\")",
+      "PowerShell(ruby bin/rails generate model UserWallet user:references balance_cents:integer balance_currency:string pending_withdrawal_cents:integer lifetime_earned_cents:integer lifetime_withdrawn_cents:integer 2>&1; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails generate model MimoTransaction sender:references receiver:references mimo_item:references price_cents:integer price_currency:string receiver_value_cents:integer receiver_value_currency:string message:text status:string 2>&1; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails generate model WithdrawalRequest user:references processed_by:references amount_cents:integer amount_currency:string status:string pix_key:string pix_key_type:string admin_notes:text processed_at:datetime 2>&1; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails generate model WalletReconciliation user_wallet:references reconciled_by:references expected_balance_cents:integer actual_balance_cents:integer discrepancy_cents:integer status:string notes:text reconciled_at:datetime 2>&1; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails db:migrate; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_mimos.rb\"; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_mimos_integration.rb\"; \"EXIT: $LASTEXITCODE\")",
+      "Bash(bundle exec *)",
+      "Bash(ruby -e ' *)",
+      "PowerShell(ruby bin/rails generate migration AddPaymentAndFeeBreakdownToMimoTransactions 2>&1; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(bundle install 2>&1 | Select-Object -Last 15; \"EXIT: $LASTEXITCODE\")",
+      "Bash(ruby -c app/services/mimo_fee_calculator.rb)",
+      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_fee_calculator.rb\"; \"EXIT: $LASTEXITCODE\")",
+      "Bash(ruby -c app/services/mp_transfer_service.rb)",
+      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_mp_transfer.rb\"; \"EXIT: $LASTEXITCODE\")",
+      "Bash(ruby -c app/services/mimo_payment_service.rb)",
+      "Bash(ruby -c app/services/mercado_pago/webhook_service.rb app/models/payment.rb app/models/mimo_transaction.rb)",
+      "Bash(ruby -c app/services/withdrawal_service.rb)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch\\db\\migrate"
     ]
   }
 }

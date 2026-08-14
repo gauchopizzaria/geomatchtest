@@ -1,0 +1,45 @@
+<div class="gm-mimo-wrapper"
+     data-controller="mimo"
+     data-mimo-receiver-id-value="<%= @receiver_id %>"
+     data-mimo-catalog-url-value="<%= mimo_items_catalog_path %>"
+     data-mimo-wallet-url-value="<%= wallet_path %>"
+     data-mimo-confirm-url-value="<%= mimo_confirm_page_path %>">
+
+  <div class="gm-mimo-appbar">
+    <%= link_to (@receiver ? user_path(@receiver) : my_profile_path), class: "gm-mimo-back" do %>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <% end %>
+    <h1>Enviar um Mimo<%= " para #{@receiver.display_name}" if @receiver %></h1>
+    <span class="gm-mimo-appbar-spacer"></span>
+  </div>
+
+  <% if @receiver.blank? %>
+    <div class="gm-mimo-recipient-tabs">
+      <button type="button" class="gm-mimo-tab is-active" data-mimo-target="tabUser" data-action="mimo#showUserTab">Para um contato</button>
+      <button type="button" class="gm-mimo-tab" data-mimo-target="tabPhone" data-action="mimo#showPhoneTab">Presentear via Telefone</button>
+    </div>
+
+    <div class="gm-mimo-phone-section" data-mimo-target="phoneSection" hidden>
+      <label class="gm-mimo-phone-label" for="mimo-phone-input">Celular de quem vai receber</label>
+      <input type="tel"
+             id="mimo-phone-input"
+             class="gm-mimo-phone-input"
+             data-mimo-target="phoneInput"
+             data-action="input->mimo#maskPhone"
+             inputmode="numeric"
+             autocomplete="tel-national"
+             placeholder="(00) 00000-0000">
+      <p class="gm-mimo-phone-hint">A pessoa ainda não tem conta no GeoMatch? Sem problema — enviamos um SMS com o convite para resgatar o Mimo.</p>
+      <div class="gm-mimo-error-banner" data-mimo-target="phoneError"></div>
+    </div>
+  <% end %>
+
+  <div class="gm-mimo-grid" data-mimo-target="grid">
+    <div class="gm-mimo-empty">Carregando catálogo...</div>
+  </div>
+
+  <div class="gm-mimo-saldo-banner">
+    <span>Saldo disponível: <strong data-mimo-target="balance">—</strong></span>
+    <%= link_to "Adicionar saldo", mimo_deposit_page_path %>
+  </div>
+</div>

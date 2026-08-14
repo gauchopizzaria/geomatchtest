@@ -1,0 +1,45 @@
+<div class="gm-mimo-wrapper"
+     data-controller="wallet"
+     data-wallet-deposit-url-value="<%= deposit_wallet_path %>"
+     data-wallet-wallet-page-url-value="<%= mimo_wallet_page_path %>">
+
+  <div class="gm-mimo-appbar">
+    <%= link_to mimo_wallet_page_path, class: "gm-mimo-back" do %>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <% end %>
+    <h1>Adicionar Saldo</h1>
+    <span class="gm-mimo-appbar-spacer"></span>
+  </div>
+
+  <div class="gm-deposit-body">
+    <p class="gm-deposit-intro">
+      Escolha um valor para adicionar à sua carteira. Depois é só usar o saldo
+      para presentear Mimos na hora, sem precisar de cartão.
+    </p>
+
+    <div class="gm-deposit-presets">
+      <% [2000, 5000, 10000].each do |cents| %>
+        <button type="button" class="gm-deposit-preset" data-amount-cents="<%= cents %>" data-action="wallet#selectDepositPreset">
+          <%= Money.new(cents, "BRL").format %>
+        </button>
+      <% end %>
+    </div>
+
+    <div class="gm-deposit-custom">
+      <label class="gm-saque-label" for="deposit-amount">Ou digite outro valor</label>
+      <input id="deposit-amount"
+             class="gm-saque-input"
+             data-wallet-target="depositAmountInput"
+             data-action="input->wallet#clearDepositPreset"
+             inputmode="numeric"
+             placeholder="R$ 0,00">
+    </div>
+
+    <div class="gm-mimo-error-banner" data-wallet-target="depositError"></div>
+
+    <button type="button" class="gm-mimo-btn gm-mimo-btn--gold" data-wallet-target="depositButton" data-action="wallet#deposit">
+      <span class="gm-mimo-spinner"></span>
+      <span class="gm-mimo-btn-label">Ir para o pagamento</span>
+    </button>
+  </div>
+</div>

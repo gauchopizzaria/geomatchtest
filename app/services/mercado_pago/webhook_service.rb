@@ -84,8 +84,41 @@ module MercadoPago
     def update_local_payment_from_mp(payment, mp_payment)
       if payment.one_off_message?
         handle_one_off_message_payment(payment, mp_payment)
+      elsif payment.mimo_purchase?
+        handle_mimo_purchase_payment(payment, mp_payment)
+      elsif payment.wallet_deposit?
+        handle_wallet_deposit_payment(payment, mp_payment)
       else
         handle_plan_purchase_payment(payment, mp_payment)
+      end
+    end
+
+    # Compra de Mimo: approved credita a carteira do destinatário (MimoPaymentService.complete!);
+    # rejected/cancelled marca a MimoTransaction como failed — o ledger nunca fica "pending" para sempre.
+    def handle_mimo_purchase_payment(payment, mp_payment)
+      mimo_transaction = payment.mimo_transaction
+      return unless mimo_transaction
+
+      case mp_payment["status"]
+      when "approved"
+        payment.approve!(mp_payment) if payment.may_approve?
+        MimoPaymentService.complete!(mimo_transaction)
+      when "rejected", "cancelled"
+        payment.reject!(mp_payment) if payment.may_reject?
+        mimo_transaction.mark_failed! if mimo_transaction.may_mark_failed?
+      end
+    end
+
+    # Depósito na carteira: approved credita o saldo do próprio usuário
+    # (WalletDepositService.complete! — idempotente via payment.paid_at);
+    # rejected/cancelled só reflete o estado do Payment, não há saldo a estornar.
+    def handle_wallet_deposit_payment(payment, mp_payment)
+      case mp_payment["status"]
+      when "approved"
+        payment.approve!(mp_payment) if payment.may_approve?
+        WalletDepositService.complete!(payment)
+      when "rejected", "cancelled"
+        payment.reject!(mp_payment) if payment.may_reject?
       end
     end
 

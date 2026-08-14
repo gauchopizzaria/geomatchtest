@@ -48,6 +48,14 @@ class User < ApplicationRecord
   has_many :user_coupons, dependent: :destroy
   has_many :coupons, through: :user_coupons
 
+  # =========================================================
+  # MIMOS (carteira e presentes virtuais)
+  # =========================================================
+  has_one  :wallet, class_name: 'UserWallet', dependent: :destroy
+  has_many :mimo_transactions_sent,     class_name: 'MimoTransaction', foreign_key: :sender_id,   dependent: :destroy
+  has_many :mimo_transactions_received, class_name: 'MimoTransaction', foreign_key: :receiver_id, dependent: :destroy
+  has_many :withdrawal_requests, dependent: :destroy
+
   # Atributo virtual — coupon_code chega junto do form de onboarding/perfil,
   # mas não é coluna do banco. Sem isto, permitir :coupon_code em user_params
   # quebraria o update com ActiveModel::UnknownAttributeError.

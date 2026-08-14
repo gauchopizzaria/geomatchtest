@@ -815,6 +815,19 @@ function showUserPopup(user) {
     blockBtn.onclick = () => openBlockConfirm(displayName, `/users/${user.id}/block`);
   }
 
+  // --- Botão "Enviar Mimo": leva ao catálogo já com o destinatário selecionado ---
+  const mimoBtn = document.getElementById('popup-btn-mimo');
+  if (mimoBtn) {
+    mimoBtn.onclick = () => {
+      const url = `/mimos/catalogo?receiver_id=${user.id}`;
+      if (typeof Turbo !== 'undefined') {
+        Turbo.visit(url);
+      } else {
+        window.location.href = url;
+      }
+    };
+  }
+
   userPopup.classList.remove("hidden");
   userPopup.classList.add("show");
 }
@@ -1498,5 +1511,6 @@ document.addEventListener("turbo:load", () => {
     body.cinematic-mode .premium-marker { box-shadow: none !important; animation-play-state: paused !important; border-color: rgba(34,197,94,0.4) !important; }
     #mco-view-btn:active { transform: scale(0.95); }
   `;
-  document.head.appendChild(style);
+  d
+  ocument.head.appendChild(style);
 });

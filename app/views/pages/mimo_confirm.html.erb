@@ -1,0 +1,52 @@
+<div class="gm-mimo-wrapper"
+     data-controller="mimo"
+     data-mimo-receiver-id-value="<%= @receiver_id %>"
+     data-mimo-receiver-phone-value="<%= @receiver_phone %>"
+     data-mimo-item-id-value="<%= @mimo_item_id %>"
+     data-mimo-send-url-value="<%= send_mimo_path %>"
+     data-mimo-send-with-wallet-url-value="<%= send_mimo_with_wallet_path %>"
+     data-mimo-celebration-url-base-value="<%= mimo_celebration_page_path(id: "PLACEHOLDER_ID") %>">
+
+  <div class="gm-mimo-appbar">
+    <%= link_to mimo_catalog_page_path(receiver_id: @receiver_id), class: "gm-mimo-back" do %>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <% end %>
+    <h1>Confirmar Mimo</h1>
+    <span class="gm-mimo-appbar-spacer"></span>
+  </div>
+
+  <div class="gm-mimo-confirm-body">
+    <div class="gm-mimo-confirm-illus"><%= @mimo_item_icon.presence || "🎁" %></div>
+    <div class="gm-mimo-confirm-title"><%= @mimo_item_name %></div>
+    <div class="gm-mimo-confirm-recipient">
+      <% if @receiver %>
+        Para <strong><%= @receiver.display_name %></strong>
+      <% else %>
+        Convite por SMS para <strong><%= @receiver_phone %></strong>
+      <% end %>
+    </div>
+    <div class="gm-mimo-confirm-price"><%= @mimo_item_price %></div>
+
+    <textarea class="gm-mimo-msg-field" data-mimo-target="message" rows="3" placeholder="Escreva uma mensagem (opcional)"></textarea>
+
+    <div class="gm-mimo-error-banner" data-mimo-target="error"></div>
+
+    <div class="gm-mimo-confirm-cta">
+      <button type="button" class="gm-mimo-btn gm-mimo-btn--gold" data-mimo-target="sendButton" data-action="mimo#send">
+        <span class="gm-mimo-spinner"></span>
+        <span class="gm-mimo-btn-label">Presentear com Cartão</span>
+      </button>
+
+      <%# Saldo interno só vale para destinatário já cadastrado — um convite por
+          telefone não tem carteira para creditar (ver MimoWalletPaymentService). %>
+      <% if @receiver %>
+        <button type="button" class="gm-mimo-btn gm-mimo-btn--outline" data-mimo-target="sendWalletButton" data-action="mimo#sendWithWallet">
+          <span class="gm-mimo-spinner"></span>
+          <span class="gm-mimo-btn-label">Usar saldo da carteira</span>
+        </button>
+      <% end %>
+
+      <%= link_to "Cancelar", mimo_catalog_page_path(receiver_id: @receiver_id), class: "gm-mimo-link-secondary" %>
+    </div>
+  </div>
+</div>

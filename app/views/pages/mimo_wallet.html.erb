@@ -1,0 +1,30 @@
+<div class="gm-mimo-wrapper"
+     data-controller="wallet"
+     data-wallet-show-url-value="<%= wallet_path %>"
+     data-wallet-transactions-url-value="<%= wallet_transactions_path %>"
+     data-wallet-withdraw-page-url-value="<%= mimo_withdraw_page_path %>">
+
+  <div class="gm-mimo-appbar">
+    <%= link_to my_profile_path, class: "gm-mimo-back" do %>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <% end %>
+    <h1>Carteira</h1>
+    <span class="gm-mimo-appbar-spacer"></span>
+  </div>
+
+  <div class="gm-wallet-body">
+    <div class="gm-wallet-saldo-card">
+      <div class="gm-wallet-saldo-label">Saldo disponível</div>
+      <div class="gm-wallet-saldo-value" data-wallet-target="balance">R$ 0,00</div>
+      <button type="button" class="gm-mimo-btn gm-mimo-btn--gold" data-action="wallet#goToWithdraw">Sacar para Pix</button>
+      <%= link_to "Adicionar Saldo", mimo_deposit_page_path, class: "gm-mimo-btn gm-mimo-btn--outline" %>
+    </div>
+
+    <div>
+      <div class="gm-wallet-hist-title">Histórico</div>
+      <div data-wallet-target="history">
+        <p class="gm-wallet-empty-hist">Carregando extrato...</p>
+      </div>
+    </div>
+  </div>
+</div>

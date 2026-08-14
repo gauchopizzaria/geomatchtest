@@ -258,6 +258,20 @@ html.dark-mode .profile-header-container .header-btn img {
   align-self: center;
 }
 
+/* Card "Minha Carteira" — reaproveita .verification-banner/.icon-box/.banner-text,
+   só adiciona o ícone dourado e o destaque do saldo dentro da descrição. */
+.wallet-banner-icon {
+  display: block;
+  font-size: 1.6rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.banner-description .wallet-banner-balance {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
 /* 4. Seção Destaque */
 .highlight-section {
   display: flex;

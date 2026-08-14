@@ -1,0 +1,7 @@
+// PLACEHOLDER — aguardando o JSON real da animação Lottie de celebração de Mimos.
+// O time de design deve substituir este arquivo pelo export final do After Effects
+// (via Bodymovin/LottieFiles), mantendo o mesmo nome e caminho:
+//   app/assets/images/mimo_celebration.lottie.json
+// Até lá, este arquivo não é um JSON válido de propósito: app/views/pages/mimo_celebration.html.erb
+// e app/javascript/controllers/mimo_controller.js (setupCelebration) já tratam esse
+// caso — o <lottie-player> falha ao carregar e o fallback estático (🎁) assume.
