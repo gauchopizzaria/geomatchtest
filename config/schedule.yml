@@ -9,4 +9,10 @@ expire_subscriptions:
   queue: default
   description: "Faz downgrade para Free quando premium_until expirou"
 
+reconcile_pending_deposits:
+  cron: "*/15 * * * *"
+  class: "ReconcilePendingDepositsJob"
+  queue: default
+  description: "Consulta o Mercado Pago e credita depósitos aprovados cuja notificação de webhook se perdeu"
+
 

@@ -161,6 +161,9 @@ Rails.application.routes.draw do
   get   "/wallet",                to: "wallets#show",           as: :wallet
   post  "/wallet/withdraw",       to: "wallets#withdraw",       as: :withdraw_wallet
   post  "/wallet/deposit",        to: "wallets#deposit",        as: :deposit_wallet
+  # Conciliação sob demanda: usada no retorno do checkout do MP, quando a
+  # notificação de webhook pode ainda não ter chegado (ou ter se perdido).
+  post  "/wallet/reconcile",      to: "wallets#reconcile",      as: :reconcile_wallet
   patch "/wallet/update_pix_key", to: "wallets#update_pix_key", as: :update_wallet_pix_key
   get   "/wallet/transactions",   to: "wallets#transactions",   as: :wallet_transactions
 

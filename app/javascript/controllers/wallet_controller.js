@@ -17,14 +17,43 @@ export default class extends Controller {
     withdrawUrl: String,
     withdrawPageUrl: String,
     walletPageUrl: String,
-    depositUrl: String
+    depositUrl: String,
+    reconcileUrl: String
   }
 
   selectedKeyType = null
 
   connect() {
+    // Voltando do checkout do Mercado Pago (back_urls -> /carteira?deposito=...):
+    // pede a conciliação antes de ler o saldo. O webhook pode não ter chegado
+    // ainda — ou ter se perdido — e sem isto a tela mostraria o saldo antigo.
+    if (this.returningFromCheckout() && this.hasReconcileUrlValue) {
+      this.reconcileThenLoad()
+      return
+    }
+
     if (this.hasBalanceTarget || this.hasAmountInputTarget) this.loadWallet()
     if (this.hasHistoryTarget) this.loadTransactions()
+  }
+
+  returningFromCheckout() {
+    const deposito = new URLSearchParams(window.location.search).get("deposito")
+    return deposito === "success" || deposito === "pending"
+  }
+
+  async reconcileThenLoad() {
+    try {
+      await fetch(this.reconcileUrlValue, {
+        method: "POST",
+        headers: { Accept: "application/json", "X-CSRF-Token": this.csrfToken() }
+      })
+    } catch (e) {
+      console.error("[Wallet] reconcile falhou:", e)
+    } finally {
+      // Sempre carrega o saldo: a conciliação é um reforço, não um pré-requisito.
+      await this.loadWallet()
+      if (this.hasHistoryTarget) this.loadTransactions()
+    }
   }
 
   // ───────────────────────── CARTEIRA ─────────────────────────

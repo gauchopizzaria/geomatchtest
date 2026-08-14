@@ -196,7 +196,9 @@ class MimoPaymentService
         pending: "#{base_url}/meu-perfil?mimo=pending"
       },
       auto_return: "approved",
-      binary_mode: true,
+      # Ver WalletDepositService: binary_mode force approved/rejected e é
+      # incompatível com PIX, que passa legitimamente por "pending" até compensar.
+      binary_mode: false,
       statement_descriptor: "GEOMATCH",
       metadata: {
         payment_id: payment.id,
@@ -208,7 +210,7 @@ class MimoPaymentService
       },
       expires: true,
       expiration_date_from: Time.current.iso8601,
-      expiration_date_to: (Time.current + 1.hour).iso8601
+      expiration_date_to: (Time.current + WalletDepositService::CHECKOUT_EXPIRATION).iso8601
     }
   end
 

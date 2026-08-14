@@ -43,7 +43,9 @@
       "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_mp_transfer.rb\"; \"EXIT: $LASTEXITCODE\")",
       "Bash(ruby -c app/services/mimo_payment_service.rb)",
       "Bash(ruby -c app/services/mercado_pago/webhook_service.rb app/models/payment.rb app/models/mimo_transaction.rb)",
-      "Bash(ruby -c app/services/withdrawal_service.rb)"
+      "Bash(ruby -c app/services/withdrawal_service.rb)",
+      "Bash(sed -n '/create_table \"wallet_reconciliations\"/,/^  end/p' db/schema.rb)",
+      "Bash(sed -n '/create_table \"withdrawal_requests\"/,/^  end/p' db/schema.rb)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch\\db\\migrate"

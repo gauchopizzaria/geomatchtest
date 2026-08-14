@@ -5,9 +5,13 @@ class WalletsController < ApplicationController
 
   # ApplicationController não registra authenticate_user! globalmente (cada
   # controller declara o seu) — nada a pular aqui, só o before_action próprio.
-  skip_before_action :verify_authenticity_token, only: [ :withdraw, :update_pix_key, :deposit ]
+  skip_before_action :verify_authenticity_token, only: [ :withdraw, :update_pix_key, :deposit, :reconcile ]
   before_action :authenticate_for_mobile!
   before_action :set_wallet
+
+  # Teto por requisição em #reconcile: cada item vira pelo menos uma chamada HTTP
+  # ao Mercado Pago e este endpoint responde de forma síncrona.
+  MAX_RECONCILE_PER_REQUEST = 10
 
   # GET /wallet
   def show
@@ -64,6 +68,28 @@ class WalletsController < ApplicationController
     render json: { error: "Não foi possível iniciar o depósito no momento." }, status: :bad_request
   end
 
+  # POST /wallet/reconcile
+  # Chamado pela tela da carteira quando o usuário volta do checkout do Mercado
+  # Pago (/carteira?deposito=success|pending). Pergunta ao MP o estado real dos
+  # depósitos ainda não creditados deste usuário e credita os já aprovados —
+  # assim o saldo aparece na hora mesmo que a notificação de webhook se perca,
+  # sem esperar o ReconcilePendingDepositsJob.
+  def reconcile
+    pending = ReconcilePendingDepositsJob.pending_scope
+                                         .where(user_id: mobile_current_user.id)
+                                         .limit(MAX_RECONCILE_PER_REQUEST)
+                                         .to_a
+
+    pending.each do |payment|
+      WalletDepositService.sync!(payment)
+    rescue StandardError => e
+      Rails.logger.error "[WalletsController] Falha ao conciliar payment=#{payment.id}: #{e.class}: #{e.message}"
+    end
+
+    @wallet.reload
+    render json: wallet_json.merge(reconciled: pending.size)
+  end
+
   # PATCH /wallet/update_pix_key
   def update_pix_key
     pix_key_type = params.require(:pix_key_type)
@@ -81,12 +107,23 @@ class WalletsController < ApplicationController
   end
 
   # GET /wallet/transactions
-  # Extrato combinado: Mimos recebidos (créditos) + solicitações de saque (débitos).
+  # Extrato combinado: Mimos recebidos + depósitos aprovados (créditos) e
+  # solicitações de saque (débitos). Depósitos entram aqui porque sem eles o
+  # saldo subia sem nenhuma linha correspondente no histórico — o usuário não
+  # tinha como conferir se o PIX que pagou virou saldo.
   def transactions
     mimos_in    = mobile_current_user.mimo_transactions_received.completed.recent.limit(50).to_a
     withdrawals = mobile_current_user.withdrawal_requests.recent.limit(50).to_a
+    deposits    = mobile_current_user.payments
+                                     .wallet_deposit
+                                     .where.not(paid_at: nil)
+                                     .latest_first
+                                     .limit(50)
+                                     .to_a
 
-    entries = (mimos_in.map { |mt| mimo_entry(mt) } + withdrawals.map { |wr| withdrawal_entry(wr) })
+    entries = (mimos_in.map { |mt| mimo_entry(mt) } +
+               withdrawals.map { |wr| withdrawal_entry(wr) } +
+               deposits.map { |p| deposit_entry(p) })
               .sort_by { |entry| entry[:created_at] }
               .reverse
 
@@ -120,6 +157,17 @@ class WalletsController < ApplicationController
       description: "Mimo de #{mt.sender.display_name}: #{mt.mimo_item.name}",
       status: mt.status,
       created_at: mt.created_at
+    }
+  end
+
+  def deposit_entry(payment)
+    {
+      type: "deposit",
+      id: payment.id,
+      amount_cents: payment.deposit_amount_cents.to_i,
+      description: "Depósito via Mercado Pago",
+      status: payment.state,
+      created_at: payment.paid_at || payment.created_at
     }
   end
 
