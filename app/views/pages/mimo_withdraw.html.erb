@@ -33,7 +33,8 @@
 
     <div class="gm-mimo-error-banner" data-wallet-target="error"></div>
 
-    <div class="gm-saque-aviso">Valor mínimo para saque: <strong>R$ 50,00</strong>. O processamento pode levar até 1 dia útil.</div>
+    <%# Lê a constante do serviço para o texto nunca divergir da regra aplicada. %>
+    <div class="gm-saque-aviso">Valor mínimo para saque: <strong><%= Money.new(WithdrawalService::MINIMUM_AMOUNT_CENTS, "BRL").format %></strong>. O processamento pode levar até 1 dia útil.</div>
 
     <button type="button" class="gm-mimo-btn gm-mimo-btn--gold" data-wallet-target="withdrawButton" data-action="wallet#withdraw">
       <span class="gm-mimo-spinner"></span>

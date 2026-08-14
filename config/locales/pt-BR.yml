@@ -1,4 +1,20 @@
 "pt-BR":
+  # money-rails está com locale_backend :i18n (config/initializers/money.rb) e lê
+  # separator/delimiter daqui. Sem estas chaves ele caía no padrão em inglês e
+  # formatava o saldo da carteira como "R$0.00" em vez de "R$ 0,00".
+  number:
+    format:
+      separator: ","
+      delimiter: "."
+      precision: 2
+    currency:
+      format:
+        format: "%u %n"
+        unit: "R$"
+        separator: ","
+        delimiter: "."
+        precision: 2
+
   activerecord:
     errors:
       messages:

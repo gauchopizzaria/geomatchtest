@@ -9,7 +9,7 @@ class WithdrawalService
   class InvalidStateError        < StandardError; end
   class MissingPixKeyError       < StandardError; end
 
-  MINIMUM_AMOUNT_CENTS = 5_000 # R$ 50,00
+  MINIMUM_AMOUNT_CENTS = 500 # R$ 5,00 — mesmo piso do depósito (WalletDepositService::MINIMUM_DEPOSIT_CENTS)
   COOLDOWN             = 24.hours
 
   # pix_key/pix_key_type são opcionais aqui: se omitidos, usa o que estiver
@@ -120,7 +120,7 @@ class WithdrawalService
 
   def validate_minimum!
     if amount_cents < MINIMUM_AMOUNT_CENTS
-      raise MinimumAmountError, "o valor mínimo para saque é R$ #{'%.2f' % (MINIMUM_AMOUNT_CENTS / 100.0)}"
+      raise MinimumAmountError, "o valor mínimo para saque é #{Money.new(MINIMUM_AMOUNT_CENTS, 'BRL').format}"
     end
   end
 
