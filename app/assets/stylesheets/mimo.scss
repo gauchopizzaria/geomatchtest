@@ -466,6 +466,19 @@
   font-family: 'Nunito', sans-serif;
 }
 
+// Valor preso num saque solicitado. Fica oculto quando não há reserva, para o
+// card não carregar uma linha vazia no caso comum.
+.gm-wallet-saldo-reservado {
+  display: none;
+  font-size: 0.72rem;
+  margin-top: 4px;
+  color: var(--color-primary);
+  opacity: 0.85;
+  position: relative;
+
+  &.is-visible { display: block; }
+}
+
 .gm-wallet-saldo-card .gm-mimo-btn {
   margin-top: 16px;
   position: relative;

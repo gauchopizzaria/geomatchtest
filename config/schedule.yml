@@ -15,4 +15,10 @@ reconcile_pending_deposits:
   queue: default
   description: "Consulta o Mercado Pago e credita depósitos aprovados cuja notificação de webhook se perdeu"
 
+check_pending_payouts:
+  cron: "*/10 * * * *"
+  class: "CheckPendingPayoutsJob"
+  queue: default
+  description: "Confirma no provedor os PIX de saque já enviados e dá baixa nos que compensaram"
+
 

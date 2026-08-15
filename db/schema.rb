@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_31_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -623,6 +623,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_31_120000) do
     t.integer "amount_cents", null: false
     t.string "amount_currency", default: "BRL", null: false
     t.datetime "created_at", null: false
+    t.text "payout_error"
+    t.string "payout_external_id"
+    t.jsonb "payout_payload"
+    t.string "payout_provider"
+    t.datetime "payout_requested_at"
+    t.string "payout_status"
     t.string "pix_key"
     t.string "pix_key_type"
     t.datetime "processed_at"
@@ -630,6 +636,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_31_120000) do
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["payout_provider", "payout_external_id"], name: "index_withdrawal_requests_on_payout_identity", unique: true, where: "(payout_external_id IS NOT NULL)"
+    t.index ["payout_status"], name: "index_withdrawal_requests_on_payout_status"
     t.index ["processed_by_id"], name: "index_withdrawal_requests_on_processed_by_id"
     t.index ["status"], name: "index_withdrawal_requests_on_status"
     t.index ["user_id"], name: "index_withdrawal_requests_on_user_id"

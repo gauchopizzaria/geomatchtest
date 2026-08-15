@@ -250,6 +250,16 @@ Rails.application.routes.draw do
           end
         end
 
+        # Saques dos usuários (Mimos). Sem estas rotas nenhuma WithdrawalRequest
+        # conseguia sair de "pending" — o valor ficava reservado indefinidamente.
+        resources :withdrawals, only: [:index] do
+          member do
+            patch :approve
+            patch :reject
+            patch :mark_paid
+          end
+        end
+
         # Gestão de Planos SaaS
         resources :plans, except: [:new, :edit]
 

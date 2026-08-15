@@ -214,6 +214,16 @@ class WalletsController < ApplicationController
     }
   end
 
+  # Um saque solicitado NÃO é dinheiro que já saiu: ele fica reservado até um
+  # admin aprovar e o PIX ser confirmado. Sem o status na tela o usuário lê
+  # "- R$ 23,40" e conclui que o pagamento foi feito.
+  WITHDRAWAL_STATUS_LABELS = {
+    "pending"  => "Aguardando aprovação",
+    "approved" => "Aprovado — em processamento",
+    "paid"     => "Pago",
+    "rejected" => "Recusado — valor devolvido ao saldo"
+  }.freeze
+
   def withdrawal_entry(wr)
     {
       type: "withdrawal",
@@ -221,6 +231,9 @@ class WalletsController < ApplicationController
       amount_cents: -wr.amount_cents,
       description: "Saque via PIX",
       status: wr.status,
+      status_label: WITHDRAWAL_STATUS_LABELS[wr.status] || wr.status,
+      # Só o saque pago moveu dinheiro de fato; os demais ainda são promessa.
+      settled: wr.status == "paid",
       created_at: wr.created_at
     }
   end

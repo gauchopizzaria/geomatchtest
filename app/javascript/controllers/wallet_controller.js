@@ -6,7 +6,7 @@ import { Controller } from "@hotwired/stimulus"
 //   Depósito  — envia POST /wallet/deposit e redireciona ao checkout do Mercado Pago
 export default class extends Controller {
   static targets = [
-    "balance", "history",                                                             // carteira
+    "balance", "reserved", "history",                                                  // carteira
     "amountInput", "availableText", "keyOptions", "keyInput", "error", "withdrawButton", // saque
     "depositAmountInput", "depositError", "depositButton"                              // depósito
   ]
@@ -63,7 +63,22 @@ export default class extends Controller {
     try {
       const wallet = await this.fetchJson(this.showUrlValue)
 
-      if (this.hasBalanceTarget) this.balanceTarget.textContent = wallet.balance_formatted || "R$ 0,00"
+      // O card diz "Saldo disponível", então precisa mostrar o DISPONÍVEL, não o
+      // total: um saque solicitado reserva o valor (pending_withdrawal_cents) e
+      // só sai do balance quando o pagamento é confirmado. Mostrar o total aqui
+      // fazia parecer que o pedido de saque não tinha surtido efeito nenhum.
+      if (this.hasBalanceTarget) {
+        this.balanceTarget.textContent = this.formatCents(wallet.available_balance_cents || 0)
+      }
+
+      // O valor reservado não some — ele fica explícito, aguardando o saque.
+      if (this.hasReservedTarget) {
+        const reserved = wallet.pending_withdrawal_cents || 0
+        this.reservedTarget.textContent = reserved > 0
+          ? `${this.formatCents(reserved)} reservado em saque solicitado`
+          : ""
+        this.reservedTarget.classList.toggle("is-visible", reserved > 0)
+      }
 
       if (this.hasAvailableTextTarget) {
         this.availableTextTarget.textContent = this.formatCents(wallet.available_balance_cents || 0)
@@ -102,6 +117,12 @@ export default class extends Controller {
         ? '<path d="M12 19V5M5 12l7-7 7 7"/>'
         : '<path d="M12 5v14M5 12l7 7 7-7"/>'
 
+      // status_label distingue "saque pago" de "saque só solicitado" — sem ele
+      // um pedido pendente aparece idêntico a um pagamento já concluído.
+      const status = entry.status_label
+        ? ` <span class="gm-wallet-hist-status">· ${this.escapeHtml(entry.status_label)}</span>`
+        : ""
+
       return `
         <div class="gm-wallet-hist-item">
           <div class="gm-wallet-hist-ic ${isIn ? "in" : "out"}">
@@ -109,7 +130,7 @@ export default class extends Controller {
           </div>
           <div class="gm-wallet-hist-mid">
             <strong>${this.escapeHtml(entry.description)}</strong>
-            <small>${this.formatDate(entry.created_at)}</small>
+            <small>${this.formatDate(entry.created_at)}${status}</small>
           </div>
           <span class="gm-wallet-hist-val ${isIn ? "in" : "out"}">${isIn ? "+" : "-"} ${this.formatCents(Math.abs(entry.amount_cents))}</span>
         </div>

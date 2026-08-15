@@ -71,6 +71,66 @@ namespace :mimos do
     end
   end
 
+  desc "Lista as solicitações de saque e o estado de cada uma"
+  task withdrawals: :environment do
+    requests = WithdrawalRequest.includes(:user).recent.limit(30)
+    if requests.empty?
+      puts "Nenhuma solicitação de saque."
+      next
+    end
+
+    puts "\n=== SAQUES (mais recentes primeiro) ==="
+    requests.each do |wr|
+      puts "#{wr.created_at.strftime('%d/%m %H:%M')} | #{wr.amount.format} | #{wr.status.upcase}"
+      puts "  id ......: #{wr.id}"
+      puts "  usuário .: #{wr.user.email}"
+      puts "  chave pix: #{wr.pix_key_type} #{wr.pix_key}"
+    end
+
+    puts "\nAprovar:  bin/rails 'mimos:approve_withdrawal[<id>]'"
+    puts "Recusar:  bin/rails 'mimos:reject_withdrawal[<id>,motivo]'\n\n"
+  end
+
+  desc "Aprova uma solicitação de saque (libera o ProcessWithdrawalJob)"
+  task :approve_withdrawal, [ :id ] => :environment do |_t, args|
+    abort "Informe o id: bin/rails 'mimos:approve_withdrawal[<id>]'" if args[:id].blank?
+
+    wr = WithdrawalRequest.find_by(id: args[:id])
+    abort "Solicitação #{args[:id]} não encontrada." if wr.nil?
+
+    admin = User.find_by(admin: true)
+    WithdrawalService.approve!(wr, admin: admin)
+
+    puts "Saque #{wr.id} aprovado (status=#{wr.reload.status})."
+    puts "ATENÇÃO: o envio do PIX para #{wr.pix_key} é MANUAL — o sistema só move"
+    puts "o valor entre as contas da plataforma e dá baixa no ledger."
+    puts "Depois de enviar o PIX de verdade, rode: bin/rails 'mimos:mark_withdrawal_paid[#{wr.id}]'"
+  end
+
+  desc "Recusa uma solicitação de saque e devolve o valor ao saldo disponível"
+  task :reject_withdrawal, [ :id, :reason ] => :environment do |_t, args|
+    abort "Informe o id: bin/rails 'mimos:reject_withdrawal[<id>,motivo]'" if args[:id].blank?
+
+    wr = WithdrawalRequest.find_by(id: args[:id])
+    abort "Solicitação #{args[:id]} não encontrada." if wr.nil?
+
+    WithdrawalService.reject!(wr, admin: User.find_by(admin: true), reason: args[:reason])
+    puts "Saque #{wr.id} recusado. Saldo disponível de #{wr.user.email}: #{Money.new(wr.user.wallet.available_balance_cents, 'BRL').format}"
+  end
+
+  desc "Marca um saque aprovado como pago (use depois de enviar o PIX de fato)"
+  task :mark_withdrawal_paid, [ :id ] => :environment do |_t, args|
+    abort "Informe o id: bin/rails 'mimos:mark_withdrawal_paid[<id>]'" if args[:id].blank?
+
+    wr = WithdrawalRequest.find_by(id: args[:id])
+    abort "Solicitação #{args[:id]} não encontrada." if wr.nil?
+
+    WithdrawalService.mark_paid!(wr, admin: User.find_by(admin: true))
+    wallet = wr.user.wallet
+    puts "Saque #{wr.id} marcado como pago."
+    puts "Carteira de #{wr.user.email}: saldo=#{Money.new(wallet.balance_cents, 'BRL').format} reservado=#{Money.new(wallet.pending_withdrawal_cents, 'BRL').format}"
+  end
+
   # Consulta ao vivo, tolerante a falha — o diagnóstico nunca deve explodir.
   def fetch_remote_status(payment)
     require "mercadopago"
