@@ -1,14 +1,22 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database.
+# Migrations ao subir o servidor: DESLIGADAS por padrão — ligue com
+# RUN_MIGRATIONS=true nas variáveis de ambiente do Render.
 #
-# Procura "rails server" em qualquer ponto do comando. O CMD do Dockerfile é
-# `bash -lc "bundle exec rails server -b 0.0.0.0 -p 3000"`, e a checagem antiga
-# (penúltimo e último argumentos == "./bin/rails" "server") nunca casava com
-# ele: nenhum deploy aplicava migrations. Foi assim que a coluna
-# messages.reply_to_id faltou em produção e o envio de mensagens quebrou.
-if [[ "$*" == *"rails server"* ]]; then
-  ./bin/rails db:prepare
+# Por quê: o banco de produção (Render free, sem Shell) vem sendo ajustado à
+# mão, então a tabela schema_migrations pode não refletir o que já existe lá.
+# Rodar migrations automaticamente nessas condições fez um deploy falhar
+# (a coluna messages.reply_to_id já tinha sido criada manualmente). Só ligue
+# depois de conferir que schema_migrations está em dia com o banco.
+#
+# Usa db:migrate, nunca db:prepare: quando acha que o banco não foi
+# inicializado, o db:prepare carrega db/schema.rb (create_table ...
+# force: :cascade) — em produção isso apagaria as tabelas com os dados.
+#
+# A checagem procura "rails server" em qualquer ponto do comando porque o CMD
+# do Dockerfile é `bash -lc "bundle exec rails server ..."`.
+if [[ "$*" == *"rails server"* && "${RUN_MIGRATIONS}" == "true" ]]; then
+  ./bin/rails db:migrate
 fi
 
 exec "${@}"
