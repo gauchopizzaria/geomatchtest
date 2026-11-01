@@ -81,6 +81,7 @@ document.addEventListener('turbo:load', () => {
         if (data.deleted_message_id) {
           const el = document.getElementById(`msg-${data.deleted_message_id}`);
           if (el) el.remove();
+          markQuotesAsDeleted(data.deleted_message_id);
           return;
         }
 
@@ -132,6 +133,7 @@ document.addEventListener('turbo:load', () => {
         if (response.ok) {
           const itemsToRemove = chatWindow.querySelectorAll('.message-row, .date-separator');
           itemsToRemove.forEach(m => m.remove());
+          cancelReply();
           const menu = document.querySelector('[data-chat-menu-target="menu"]');
           if (menu) menu.hidden = true;
         }
@@ -177,6 +179,79 @@ document.addEventListener('turbo:load', () => {
   }
 
   // =======================================================
+  //   RESPONDER MENSAGEM (estilo WhatsApp)
+  //   Arrastar uma mensagem para a direita (ou "Responder" no toque longo)
+  //   marca a mensagem na barra acima do campo; o envio leva reply_to_id.
+  // =======================================================
+  const otherUserName     = chatWindow.dataset.otherUserName || 'Usuário';
+  const replyPreview      = document.getElementById('reply-preview');
+  const replyPreviewName  = document.getElementById('reply-preview-name');
+  const replyPreviewText  = document.getElementById('reply-preview-text');
+  const replyPreviewClose = document.getElementById('reply-preview-close');
+  let replyingTo = null; // id da mensagem que está sendo respondida
+
+  function startReply(row) {
+    const id = parseInt((row.id || '').replace('msg-', ''), 10);
+    if (!id || !replyPreview) return;
+
+    replyingTo = id;
+    replyPreviewName.textContent = row.classList.contains('sent') ? 'Você' : otherUserName;
+    replyPreviewText.textContent = row.dataset.content || '';
+    replyPreview.hidden = false;
+    messageInput.focus();
+  }
+
+  function cancelReply() {
+    replyingTo = null;
+    if (replyPreview) replyPreview.hidden = true;
+  }
+
+  if (replyPreviewClose) {
+    // mousedown sem default: no desktop o campo não perde o foco ao fechar a barra
+    replyPreviewClose.addEventListener('mousedown', (e) => e.preventDefault());
+    replyPreviewClose.addEventListener('click', cancelReply);
+  }
+
+  // Citação dentro do balão (mesmo HTML que o show.html.erb desenha)
+  function quoteHtml(quoted) {
+    if (!quoted || !quoted.id) return '';
+    const name = Number(quoted.sender_id) === currentUserId ? 'Você' : (quoted.sender_name || otherUserName);
+    return `<button type="button" class="msg-quote" data-reply-to-id="${parseInt(quoted.id, 10)}">` +
+             `<span class="msg-quote-name">${escapeHtml(name)}</span>` +
+             `<span class="msg-quote-text">${escapeHtml(quoted.content)}</span>` +
+           `</button>`;
+  }
+
+  // Tocar na citação: rola até a mensagem original e a destaca
+  function jumpToMessage(id) {
+    const target = document.getElementById(`msg-${parseInt(id, 10)}`);
+    if (!target) return;
+
+    const rowRect = target.getBoundingClientRect();
+    const winRect = chatWindow.getBoundingClientRect();
+    chatWindow.scrollBy({
+      top: (rowRect.top - winRect.top) - (winRect.height - rowRect.height) / 2,
+      behavior: 'smooth'
+    });
+
+    target.classList.remove('is-highlighted');
+    void target.offsetWidth; // reinicia a animação num segundo toque seguido
+    target.classList.add('is-highlighted');
+    setTimeout(() => target.classList.remove('is-highlighted'), 1600);
+  }
+
+  // A mensagem citada foi apagada: a citação não pode continuar mostrando o texto
+  function markQuotesAsDeleted(id) {
+    const msgId = parseInt(id, 10);
+    chatWindow.querySelectorAll(`.msg-quote[data-reply-to-id="${msgId}"]`).forEach((quote) => {
+      quote.classList.add('is-deleted');
+      const text = quote.querySelector('.msg-quote-text');
+      if (text) text.textContent = 'Mensagem apagada';
+    });
+    if (replyingTo === msgId) cancelReply();
+  }
+
+  // =======================================================
   //   SUBMIT DA MENSAGEM
   //   (sem <form>: o envio é disparado pelo botão ou pelo Enter)
   // =======================================================
@@ -187,7 +262,11 @@ document.addEventListener('turbo:load', () => {
     const content = messageInput.value.trim();
     if (!content) return;
 
+    const message = { content };
+    if (replyingTo) message.reply_to_id = replyingTo;
+
     messageInput.value = "";
+    cancelReply();
     matchChannel.sendTypingStatus(false);
 
     fetch(messagesUrl, {
@@ -196,7 +275,7 @@ document.addEventListener('turbo:load', () => {
         "Content-Type": "application/json",
         "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content,
       },
-      body: JSON.stringify({ message: { content } }),
+      body: JSON.stringify({ message }),
     })
     .then((response) => {
       if (!response.ok) console.error("Erro ao enviar mensagem");
@@ -210,6 +289,9 @@ document.addEventListener('turbo:load', () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+    } else if (e.key === 'Escape' && replyingTo) {
+      e.preventDefault();
+      cancelReply();
     }
   });
 
@@ -240,7 +322,7 @@ document.addEventListener('turbo:load', () => {
       avatarHtml += `</div>`;
     }
 
-    const bubbleHtml = `<div class="message-bubble">${escapeHtml(message.content)}</div>`;
+    const bubbleHtml = `<div class="message-bubble">${quoteHtml(message.reply_to)}${escapeHtml(message.content)}</div>`;
     const statusHtml = isSender
       ? `<div class="message-status status-${message.status || 'sent'}" data-status-id="${message.id}"></div>`
       : '';
@@ -322,6 +404,17 @@ document.addEventListener('turbo:load', () => {
       html += `</div>`;
     }
 
+    // ----- TODAS: responder (alternativa ao arrastar para a direita) -----
+    html += `
+      <button class="context-action" id="ctx-reply-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 14 4 9 9 4"></polyline>
+          <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+        </svg>
+        Responder
+      </button>
+    `;
+
     // ----- MENSAGENS ENVIADAS: apagar -----
     if (isSent) {
       html += `
@@ -359,6 +452,15 @@ document.addEventListener('turbo:load', () => {
         closeContextMenu();
       });
     });
+
+    // Botão responder
+    const replyBtn = menu.querySelector('#ctx-reply-btn');
+    if (replyBtn) {
+      replyBtn.addEventListener('click', () => {
+        closeContextMenu();
+        startReply(row);
+      });
+    }
 
     // Botão apagar
     const deleteBtn = menu.querySelector('#ctx-delete-btn');
@@ -624,81 +726,166 @@ document.addEventListener('turbo:load', () => {
     setTimeout(scrollToBottom, 100);
   });
 
-  // --- Fechar teclado ao tocar na área de mensagens (comportamento WhatsApp) ---
-  // Usa touchstart em fase de captura para pegar o toque antes do long-press
-  chatWindow.addEventListener('touchstart', (e) => {
-    if (document.activeElement !== messageInput) return;
-    const tag = e.target.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
-    messageInput.blur();
-  }, { passive: true, capture: true });
-
   // =======================================================
-  //   DESLIZAR PARA REVELAR HORÁRIOS (estilo Instagram)
+  //   GESTOS NA ÁREA DE MENSAGENS
+  //   ← esquerda : revela os horários (estilo Instagram)
+  //   → direita  : responde a mensagem arrastada (estilo WhatsApp)
+  //   toque      : na citação, leva até a mensagem original; fora dela,
+  //                fecha o teclado (comportamento WhatsApp)
+  //
+  //   Tudo em fase de captura: o long-press das linhas chama preventDefault e
+  //   stopPropagation no touchstart — por isso o toque na citação também é
+  //   tratado aqui (o navegador não gera "click" depois daquele preventDefault).
+  //
+  //   O teclado só fecha num toque simples ou ao rolar na vertical — antes
+  //   fechava já no touchstart, e arrastar para responder com o teclado aberto
+  //   fazia ele fechar e abrir de novo.
   // =======================================================
-  (function setupTimestampReveal() {
+  (function setupMessageGestures() {
     const slideContainer = chatWindow.querySelector('.messages-slide-container');
     if (!slideContainer) return;
 
-    const MAX_SLIDE = 52;
-    let startX = 0;
-    let startY = 0;
-    let active = false;
-    let directionLocked = false;
-    let isHorizontal = false;
+    const MAX_SLIDE       = 52;  // ← quanto a lista anda para mostrar os horários
+    const MAX_REPLY_SLIDE = 76;  // → quanto a mensagem anda ao ser arrastada
+    const REPLY_THRESHOLD = 56;  // → soltar a partir daqui responde
+    const TAP_MAX_MS      = 450; // mais que isso é toque longo (abre o menu)
 
-    function onStart(x, y) {
+    let startX = 0, startY = 0, startTime = 0;
+    let active = false, directionLocked = false, isHorizontal = false;
+    let startTarget = null, swipeRow = null, replyArmed = false;
+    let lastTouchAt = 0;
+
+    function onStart(x, y, target) {
       startX = x;
       startY = y;
+      startTime = Date.now();
       active = true;
       directionLocked = false;
       isHorizontal = false;
+      startTarget = target;
+      swipeRow = target && target.closest ? target.closest('.message-row') : null;
+      replyArmed = false;
     }
 
+    // true quando o gesto é horizontal — aí a rolagem da conversa é bloqueada
     function onMove(x, y) {
-      if (!active) return;
-      const dx = startX - x;   // positivo = moveu para a esquerda
+      if (!active) return false;
+      const dx = x - startX;               // positivo = moveu para a direita
       const dy = Math.abs(y - startY);
 
       if (!directionLocked) {
-        if (Math.abs(dx) < 5 && dy < 5) return;
+        if (Math.abs(dx) < 5 && dy < 5) return false;
         directionLocked = true;
         isHorizontal = Math.abs(dx) > dy;
+        if (!isHorizontal) blurInput();    // rolagem vertical: fecha o teclado
       }
+      if (!isHorizontal) return false;
 
-      if (!isHorizontal) return;
+      if (dx < 0) {
+        dragReply(0);
+        slideContainer.classList.add('is-dragging');
+        slideContainer.style.transform = `translateX(-${Math.min(-dx, MAX_SLIDE)}px)`;
+      } else {
+        slideContainer.style.transform = '';
+        dragReply(dx);
+      }
+      return true;
+    }
 
-      const offset = Math.min(Math.max(dx, 0), MAX_SLIDE);
-      slideContainer.classList.add('is-dragging');
-      slideContainer.style.transform = `translateX(-${offset}px)`;
+    function dragReply(dx) {
+      if (!swipeRow) return;
+      const offset = Math.min(dx, MAX_REPLY_SLIDE);
+      swipeRow.classList.add('is-reply-dragging');
+      swipeRow.style.transform = offset ? `translateX(${offset}px)` : '';
+      // 0 → 1: faz o ícone de resposta surgir à esquerda (ver chat.scss)
+      swipeRow.style.setProperty('--reply-progress', Math.min(offset / REPLY_THRESHOLD, 1).toFixed(2));
+
+      const armed = offset >= REPLY_THRESHOLD;
+      if (armed && !replyArmed && navigator.vibrate) navigator.vibrate(12);
+      replyArmed = armed;
+    }
+
+    function releaseRow() {
+      if (!swipeRow) return;
+      swipeRow.classList.remove('is-reply-dragging');
+      swipeRow.style.transform = '';
+      swipeRow.style.removeProperty('--reply-progress');
+    }
+
+    function resetSlide() {
+      slideContainer.classList.remove('is-dragging');
+      slideContainer.style.transform = '';
     }
 
     function onEnd() {
       if (!active) return;
       active = false;
-      slideContainer.classList.remove('is-dragging');
-      slideContainer.style.transform = '';
+      resetSlide();
+
+      if (isHorizontal) {
+        const row = swipeRow;
+        const shouldReply = replyArmed && row;
+        releaseRow();
+        if (shouldReply) startReply(row);
+        return;
+      }
+
+      if (directionLocked) return; // foi rolagem vertical — teclado já fechado
+
+      // Toque simples
+      const quote = startTarget && startTarget.closest ? startTarget.closest('.msg-quote') : null;
+      if (quote && Date.now() - startTime < TAP_MAX_MS) {
+        jumpToMessage(quote.dataset.replyToId);
+        return;
+      }
+      blurInput();
     }
 
-    // — Touch (capture: true para não ser bloqueado pelo stopPropagation do long-press)
+    function onCancel() {
+      if (!active) return;
+      active = false;
+      resetSlide();
+      releaseRow();
+    }
+
+    function blurInput() {
+      if (document.activeElement === messageInput) messageInput.blur();
+    }
+
+    // — Touch
     chatWindow.addEventListener('touchstart', (e) => {
+      lastTouchAt = Date.now();
+      if (e.touches.length > 1) { onCancel(); return; } // pinça/dois dedos: ignora
       const t = e.touches[0];
-      onStart(t.clientX, t.clientY);
+      onStart(t.clientX, t.clientY, e.target);
     }, { passive: true, capture: true });
 
     chatWindow.addEventListener('touchmove', (e) => {
       const t = e.touches[0];
-      onMove(t.clientX, t.clientY);
-      if (active && isHorizontal) e.preventDefault();
+      if (onMove(t.clientX, t.clientY)) e.preventDefault();
     }, { passive: false, capture: true });
 
-    chatWindow.addEventListener('touchend',    onEnd, { capture: true });
-    chatWindow.addEventListener('touchcancel', onEnd, { capture: true });
+    chatWindow.addEventListener('touchend', () => {
+      lastTouchAt = Date.now();
+      onEnd();
+    }, { capture: true });
+    chatWindow.addEventListener('touchcancel', onCancel, { capture: true });
 
-    // — Mouse (para testes no desktop)
-    chatWindow.addEventListener('mousedown', (e) => onStart(e.clientX, e.clientY));
-    chatWindow.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY));
-    chatWindow.addEventListener('mouseup',   onEnd);
-    chatWindow.addEventListener('mouseleave', onEnd);
+    // — Mouse (desktop). Ignora o mouse que o navegador simula logo após um toque.
+    const justTouched = () => Date.now() - lastTouchAt < 800;
+    chatWindow.addEventListener('mousedown', (e) => {
+      if (e.button !== 0 || justTouched()) return;
+      onStart(e.clientX, e.clientY, e.target);
+    });
+    chatWindow.addEventListener('mousemove', (e) => { if (!justTouched()) onMove(e.clientX, e.clientY); });
+    chatWindow.addEventListener('mouseup',   () => { if (!justTouched()) onEnd(); });
+    chatWindow.addEventListener('mouseleave', onCancel);
+
+    // — Teclado: Enter/Espaço na citação focada (clique sem ponteiro tem detail 0)
+    chatWindow.addEventListener('click', (e) => {
+      if (e.detail !== 0) return;
+      const quote = e.target.closest && e.target.closest('.msg-quote');
+      if (quote) jumpToMessage(quote.dataset.replyToId);
+    });
   })();
 });

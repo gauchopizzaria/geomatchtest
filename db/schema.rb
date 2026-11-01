@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_14_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_01_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -183,11 +183,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_14_120000) do
     t.datetime "created_at", null: false
     t.bigint "match_id", null: false
     t.datetime "read_at"
+    t.bigint "reply_to_id"
     t.bigint "sender_id", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["id"], name: "index_messages_on_id", unique: true
     t.index ["match_id"], name: "index_messages_on_match_id"
+    t.index ["reply_to_id"], name: "index_messages_on_reply_to_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
   end
 
@@ -657,6 +659,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_14_120000) do
   add_foreign_key "matches", "users"
   add_foreign_key "matches", "users", column: "matched_user_id"
   add_foreign_key "messages", "matches"
+  add_foreign_key "messages", "messages", column: "reply_to_id", on_delete: :nullify
   add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "mimo_transactions", "mimo_items"
   add_foreign_key "mimo_transactions", "payments"

@@ -6,6 +6,7 @@ json.messages @messages do |message|
   json.sent_at    message.created_at.iso8601
   json.read_at    message.read_at&.iso8601
   json.is_mine    message.sender_id == current_api_user.id
+  json.reply_to_id message.reply_to_id
 
   json.sender do
     json.id         message.sender.id

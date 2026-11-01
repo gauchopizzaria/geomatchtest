@@ -41,7 +41,8 @@ class MatchesController < ApplicationController
   end
 
   def show
-    @messages = @match.messages.order(created_at: :asc)
+    # reply_to: :sender — cada resposta desenha a citação (autor + trecho) sem N+1
+    @messages = @match.messages.includes(reply_to: :sender).order(created_at: :asc)
     @message  = Message.new
     @other_user = @match.other_user(current_user)
 

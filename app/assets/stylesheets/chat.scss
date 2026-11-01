@@ -333,6 +333,163 @@
   justify-content: center;
 }
 
+/* =========================================================
+   RESPONDER MENSAGEM (arrastar para a direita, estilo WhatsApp)
+   ========================================================= */
+
+/* A linha anda para a direita e o ícone de resposta surge pela esquerda.
+   --reply-progress (0 → 1) é atualizado pelo chat_logic.js durante o arraste. */
+.message-row {
+  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: -38px;
+    top: 50%;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    border-radius: 50%;
+    background: var(--color-section-gray) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a88b60' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 14 4 9 9 4'/%3E%3Cpath d='M20 20v-7a4 4 0 0 0-4-4H4'/%3E%3C/svg%3E") center / 16px no-repeat;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    opacity: var(--reply-progress, 0);
+    transform: scale(calc(0.5 + 0.5 * var(--reply-progress, 0)));
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+  }
+
+  &.is-reply-dragging,
+  &.is-reply-dragging::before {
+    transition: none;
+  }
+}
+
+/* Destaque ao tocar numa citação e pular para a mensagem original */
+.message-row.is-highlighted .message-bubble {
+  animation: msg-quote-highlight 1.6s ease;
+}
+
+@keyframes msg-quote-highlight {
+  0%, 35% { box-shadow: 0 0 0 3px rgba(207, 174, 130, 0.95); }
+  100%    { box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15); }
+}
+
+/* Citação dentro do balão da resposta */
+.msg-quote {
+  display: block;
+  width: 100%;
+  min-width: 140px;
+  margin: 2px 0 6px;
+  padding: 5px 9px 6px 10px;
+  border: none;
+  border-left: 3px solid #a88b60;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.14);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.msg-quote-name {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #8a6d45;
+}
+
+.msg-quote-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.35;
+  opacity: 0.85;
+}
+
+.msg-quote.is-deleted .msg-quote-text {
+  font-style: italic;
+  opacity: 0.6;
+}
+
+/* No balão enviado (dourado) a citação usa tons escuros para contrastar */
+.message-row.sent .msg-quote {
+  background: rgba(0, 0, 0, 0.1);
+  border-left-color: rgba(26, 26, 26, 0.55);
+}
+
+.message-row.sent .msg-quote-name { color: #3d2e17; }
+
+/* Barra "Respondendo a…" acima do campo de texto */
+.reply-preview {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px 0;
+  background-color: var(--color-background);
+  border-top: 1px solid var(--color-border);
+
+  &[hidden] { display: none; }
+}
+
+/* Com a barra aberta ela já faz a divisão — evita linha dupla */
+.reply-preview:not([hidden]) + .chat-input-dark {
+  border-top: none;
+}
+
+.reply-preview-content {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border-left: 3px solid #a88b60;
+  border-radius: 8px;
+  background-color: var(--color-section-gray);
+}
+
+.reply-preview-name {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #8a6d45;
+}
+
+.reply-preview-text {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reply-preview-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Modo escuro: o dourado escuro some no cinza escuro — volta ao dourado do tema */
+.dark-mode,
+html.dark:not(.light-mode) {
+  .message-row.received .msg-quote-name,
+  .reply-preview-name { color: var(--color-primary); }
+}
+
 /* --- 3. BARRA DE INPUT (Fixo no Rodapé) --- */
 .chat-input-dark {
   flex-shrink: 0;
