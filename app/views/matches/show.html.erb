@@ -112,7 +112,9 @@
   </div>
 
   <%# --- 3. INPUT (Barra inferior) --- %>
-  <%# Usamos <div> em vez de <form> para eliminar a barra de navegação de formulário do iOS (^ v ✓) %>
+  <%# <div> em vez de <form>: o envio é feito via JS (chat_logic.js). Isso NÃO remove
+      a barra de formulário do iOS (^ v ✓) — ela é nativa e é escondida no app iOS
+      (ApplicationWebViewController#hideFormAccessoryBar). %>
   <div class="chat-input-dark">
     <button type="button" class="btn-gif">GIF</button>
 

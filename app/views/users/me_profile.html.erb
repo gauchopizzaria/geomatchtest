@@ -38,9 +38,15 @@
       
       <%# Barra de completude do perfil — continua levando para a edição %>
       <% completion = @user.profile_completion_percentage %>
-      <%= link_to edit_profile_path, class: "profile-completion", aria: { label: "Completar perfil: #{completion}% completo" } do %>
+      <% complete = completion >= 100 %>
+      <%= link_to edit_profile_path, class: ["profile-completion", ("is-complete" if complete)], aria: { label: "Completar perfil: #{completion}% completo" } do %>
         <span class="profile-completion-label">
-          <%= completion >= 100 ? "Perfil completo" : "#{completion}% completo" %>
+          <% if complete %>
+            <svg class="profile-completion-check" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>
+            Perfil completo
+          <% else %>
+            <%= completion %>% completo
+          <% end %>
         </span>
         <span class="profile-completion-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= completion %>">
           <span class="profile-completion-fill" style="width: <%= completion %>%"></span>

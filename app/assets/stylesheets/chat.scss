@@ -338,14 +338,21 @@
   flex-shrink: 0;
   width: 100%;
   padding: 10px 15px;
-  /* safe-area-inset-bottom só no estado normal (sem teclado aberto).
-     Quando o teclado está visível o inset vira 0 automaticamente no iOS. */
+  /* Sem teclado: o respiro de safe-area mantém o campo acima do home indicator
+     e, no app iOS, da tab bar nativa (lá o inset vale ~83px). */
   padding-bottom: max(10px, env(safe-area-inset-bottom));
   background-color: var(--color-background);
   border-top: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* Teclado aberto (classe aplicada pelo chat_logic.js): o teclado já cobre o
+   home indicator e a tab bar, e o env(safe-area-inset-bottom) NÃO zera sozinho
+   no iOS — sem isto sobrava um vão vazio entre o campo e o teclado. */
+.chat-screen-wrapper.keyboard-open .chat-input-dark {
+  padding-bottom: 10px;
 }
 
 .btn-gif {

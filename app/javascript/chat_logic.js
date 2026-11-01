@@ -569,6 +569,12 @@ document.addEventListener('turbo:load', () => {
   // =======================================================
   const chatWrapper = document.querySelector('.chat-screen-wrapper');
 
+  // Quanto a área visível precisa encolher para considerarmos o teclado aberto.
+  const KEYBOARD_MIN_HEIGHT = 120;
+  // Altura da tela SEM teclado — referência para detectar o teclado mesmo quando
+  // o WKWebView redimensiona a página inteira (aí innerHeight também encolhe).
+  let fullViewportHeight = Math.max(window.innerHeight, window.visualViewport ? window.visualViewport.height : 0);
+
   function adjustToViewport() {
     if (!chatWrapper) return;
     // visualViewport é preciso no Safari; em WkWebView pode não atualizar
@@ -576,8 +582,19 @@ document.addEventListener('turbo:load', () => {
     const vv     = window.visualViewport;
     const height = vv ? vv.height   : window.innerHeight;
     const top    = vv ? vv.offsetTop : 0;
+    const focused = document.activeElement === messageInput;
+
+    if (!focused) fullViewportHeight = Math.max(window.innerHeight, height);
+
     chatWrapper.style.height = height + 'px';
     chatWrapper.style.top    = top    + 'px';
+
+    // Com o teclado aberto, o respiro de safe-area do rodapé (home indicator e,
+    // no app iOS, a tab bar nativa: ~83px) fica atrás do teclado e virava um vão
+    // vazio entre o campo e o teclado. A classe faz o CSS zerar esse respiro.
+    const keyboardOpen = focused && (fullViewportHeight - height) > KEYBOARD_MIN_HEIGHT;
+    chatWrapper.classList.toggle('keyboard-open', keyboardOpen);
+
     requestAnimationFrame(scrollToBottom);
   }
 
@@ -602,6 +619,7 @@ document.addEventListener('turbo:load', () => {
     if (chatWrapper) {
       chatWrapper.style.height = '';
       chatWrapper.style.top    = '';
+      chatWrapper.classList.remove('keyboard-open');
     }
     setTimeout(scrollToBottom, 100);
   });
