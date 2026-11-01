@@ -1,7 +1,13 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate existing database
-if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+# If running the rails server then create or migrate existing database.
+#
+# Procura "rails server" em qualquer ponto do comando. O CMD do Dockerfile é
+# `bash -lc "bundle exec rails server -b 0.0.0.0 -p 3000"`, e a checagem antiga
+# (penúltimo e último argumentos == "./bin/rails" "server") nunca casava com
+# ele: nenhum deploy aplicava migrations. Foi assim que a coluna
+# messages.reply_to_id faltou em produção e o envio de mensagens quebrou.
+if [[ "$*" == *"rails server"* ]]; then
   ./bin/rails db:prepare
 fi
 

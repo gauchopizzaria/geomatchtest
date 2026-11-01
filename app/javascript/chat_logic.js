@@ -264,10 +264,20 @@ document.addEventListener('turbo:load', () => {
 
     const message = { content };
     if (replyingTo) message.reply_to_id = replyingTo;
+    const repliedRow = replyingTo ? document.getElementById(`msg-${replyingTo}`) : null;
 
     messageInput.value = "";
     cancelReply();
     matchChannel.sendTypingStatus(false);
+
+    // A mensagem só aparece quando o servidor a retransmite pelo ActionCable.
+    // Se o envio falhar, devolve o texto (e a resposta marcada) e avisa — antes
+    // ela simplesmente sumia, sem nenhum sinal para quem estava digitando.
+    const restoreUnsent = () => {
+      if (!messageInput.value) messageInput.value = content;
+      if (repliedRow && repliedRow.isConnected && !replyingTo) startReply(repliedRow);
+      showSendError();
+    };
 
     fetch(messagesUrl, {
       method: "POST",
@@ -278,9 +288,31 @@ document.addEventListener('turbo:load', () => {
       body: JSON.stringify({ message }),
     })
     .then((response) => {
-      if (!response.ok) console.error("Erro ao enviar mensagem");
+      if (!response.ok) {
+        console.error("Erro ao enviar mensagem", response.status);
+        restoreUnsent();
+      }
     })
-    .catch((error) => console.error(error));
+    .catch((error) => {
+      console.error(error);
+      restoreUnsent();
+    });
+  }
+
+  // Mesmo toast de shared/_flash.html.erb (fica acima do chat: z-index do container)
+  function showSendError() {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = "toast toast--alert";
+    toast.setAttribute("data-controller", "toast");
+    toast.setAttribute("role", "alert");
+    toast.setAttribute("aria-live", "polite");
+    toast.innerHTML =
+      `<span class="toast__message">Não foi possível enviar a mensagem. Tente novamente.</span>` +
+      `<button class="toast__close" data-action="toast#close" aria-label="Fechar">✕</button>`;
+    container.prepend(toast);
   }
 
   if (sendButton) sendButton.addEventListener('click', sendMessage);
