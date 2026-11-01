@@ -36,8 +36,15 @@
         <% end %>
       </h2>
       
-      <%= link_to edit_profile_path, class: "btn-edit-pill" do %>
-        <i class="fas fa-pen"></i> Completar perfil
+      <%# Barra de completude do perfil — continua levando para a edição %>
+      <% completion = @user.profile_completion_percentage %>
+      <%= link_to edit_profile_path, class: "profile-completion", aria: { label: "Completar perfil: #{completion}% completo" } do %>
+        <span class="profile-completion-label">
+          <%= completion >= 100 ? "Perfil completo" : "#{completion}% completo" %>
+        </span>
+        <span class="profile-completion-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<%= completion %>">
+          <span class="profile-completion-fill" style="width: <%= completion %>%"></span>
+        </span>
       <% end %>
     </div>
 

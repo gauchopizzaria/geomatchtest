@@ -201,6 +201,39 @@ html.dark-mode .profile-header-container .header-btn img {
   i { font-size: 0.7rem; }
 }
 
+/* Barra "X% completo" (substitui o botão Completar perfil) */
+.profile-completion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 170px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-completion-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.profile-completion-track {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background-color: rgba(128, 128, 128, 0.22);
+  overflow: hidden;
+}
+
+.profile-completion-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #a8612f, #c47a3d);
+  transition: width 0.4s ease;
+}
+
 /* 3. Banner Verificação */
 .verification-banner {
   margin: 0 20px 25px 20px;

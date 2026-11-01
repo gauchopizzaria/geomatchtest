@@ -322,6 +322,29 @@ class User < ApplicationRecord
     self.hobbies = val_to_save.reject(&:blank?).join(",")
   end
 
+  # Itens que contam para a barra "X% completo" em /meu-perfil. Todos com o
+  # mesmo peso e todos preenchíveis pelo próprio usuário (tela de editar perfil
+  # ou verificação de identidade).
+  def profile_completion_checks
+    {
+      avatar:        has_real_avatar?,
+      username:      username.present?,
+      bio:           bio.present?,
+      birthdate:     birthdate.present?,
+      gender:        gender.present?,
+      interested_in: interested_in.present?,
+      city:          city.present?,
+      hobbies:       hobbies_list.any?(&:present?),
+      album_photos:  album_photos.attached?,
+      verified:      verified?
+    }
+  end
+
+  def profile_completion_percentage
+    checks = profile_completion_checks
+    ((checks.count { |_, done| done } * 100.0) / checks.size).round
+  end
+
   def online?
     last_seen_at.present? && last_seen_at > 2.minutes.ago
   end
