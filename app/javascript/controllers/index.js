@@ -66,3 +66,6 @@ application.register("wallet", WalletController)
 
 import BalanceVisibilityController from "./balance_visibility_controller"
 application.register("balance-visibility", BalanceVisibilityController)
+
+import LikesTabsController from "./likes_tabs_controller"
+application.register("likes-tabs", LikesTabsController)

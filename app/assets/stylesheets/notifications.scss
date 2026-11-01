@@ -1,59 +1,131 @@
 // =========================================================
-// NOTIFICAÇÕES / CURTIDAS - TEMA DARK GOLD
+// CURTIDAS (/notifications)
 // =========================================================
 
 .likes-screen-wrapper {
-  background-color: var(--color-background);
+  background-color: #f8f2e8;
   min-height: 100vh;
   width: 100%;
   padding-bottom: 90px; /* Espaço Sidebar */
-  font-family: 'Poppins', sans-serif;
-  color: var(--color-text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1c1c1c;
+}
+
+/* Coluna central: no celular ocupa a tela; no desktop não estica demais */
+.likes-column {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
 /* --- 1. HEADER --- */
 .likes-header {
   // Safe area já aplicada pelo .authenticated-layout — padding fixo aqui
-  padding: 15px 20px 10px 20px;
+  padding-top: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 4px;
 }
 
-.header-title-img {
-  height: 20px; /* Ajuste do tamanho do texto PNG */
-  width: auto;
-  display: block;
+.likes-header-text { min-width: 0; }
+
+.likes-title {
+  margin: 0;
+  font-size: 31px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
+  color: #1c1c1c;
 }
 
-.icons-pill {
-  background-color: var(--color-section-light);
-  border-radius: 20px;
-  padding: 6px 14px;
-  display: flex;
-  gap: 15px;
-  border: 1px solid var(--color-border);
+.likes-subtitle {
+  margin: 1px 0 0;
+  font-size: 13px;
+  line-height: 1.3;
+  letter-spacing: -0.15px; // cabe em uma linha ao lado do botão, como no mockup
+  color: #5e5852;
 }
 
-.icon-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  color: var(--color-text);
-  display: flex;
+.likes-safety-btn {
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 15px 0 13px;
+  border: 1px solid #e7dfd2;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: #1c1c1c;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    color: #c62828;
+  }
 }
 
-/* --- 2. ABAS (TABS) --- */
+/* --- 2. ABAS (segmentado: Te curtiram / Você curtiu) --- */
 .likes-tabs {
   display: flex;
-  margin-top: 15px;
-  border-bottom: 1px solid var(--color-border);
+  gap: 4px;
+  margin-top: 20px;
+  padding: 4px;
+  border-radius: 14px;
+  background-color: #ede5d8;
 }
 
+.likes-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 11px;
+  background: transparent;
+  color: #6b6257;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+
+  &.is-active {
+    background-color: #fff;
+    color: #1c1c1c;
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Quantas curtidas recebidas (só aparece quando há alguma) */
+.likes-tab-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #c9a052;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.likes-panel {
+  padding-top: 18px;
+}
+
+/* .tab é das abas do Editar Perfil (users/edit, users/preview) — esta tela usa .likes-tab */
 .tab {
   flex: 1;
   text-align: center;
@@ -79,24 +151,11 @@
   }
 }
 
-/* --- 3. SUBTÍTULO --- */
-.likes-subheader {
-  padding: 20px 20px 10px 20px;
-  
-  h3 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text);
-  }
-}
-
-/* --- 4. GRID DE CARDS --- */
+/* --- 3. GRID DE CARDS --- */
 .likes-grid {
   display: grid;
   grid-template-columns: 1fr 1fr; /* 2 Colunas */
   gap: 12px;
-  padding: 0 15px;
 }
 
 /* ESTILO DO CARD */
@@ -205,13 +264,201 @@
   }
 }
 
-/* Estado Vazio */
+/* --- 4. ESTADO VAZIO (radar com o seu ponto no centro) --- */
 .likes-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: 50px 20px;
-  color: var(--color-text-secondary);
-  
-  .empty-icon-gold { font-size: 3rem; margin-bottom: 10px; }
+}
+
+.likes-radar {
+  position: relative;
+  width: 198px;
+  height: 198px;
+  margin-top: 8px;
+}
+
+.likes-radar-rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  circle {
+    fill: none;
+    stroke: #d6c3a1;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 4;
+  }
+}
+
+/* Pílula "300 m" em cima do anel de fora (a ~55° do topo, à direita) */
+.likes-radar-label {
+  position: absolute;
+  left: 78%;
+  top: 9%;
+  transform: translate(-50%, -50%);
+  padding: 3px 8px;
+  border: 1px solid #e5dccd;
+  border-radius: 999px;
+  background: #fff;
+  color: #3a3631;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.likes-radar-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  border-radius: 50%;
+  background: #ece4d6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: #1c1c1c;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.likes-empty-title {
+  margin: 25px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  color: #1c1c1c;
+}
+
+.likes-empty-text {
+  max-width: 290px;
+  margin: 17px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #6b6560;
+}
+
+/* Botão um pouco mais estreito que o card de dica, como no mockup */
+.likes-empty-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: calc(100% - 24px);
+  height: 52px;
+  margin-top: 22px;
+  border-radius: 15px;
+  background: #c9a052;
+  color: #1f1a12;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &:active { transform: scale(0.98); }
+
+  svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.likes-empty-link {
+  margin-top: 26px;
+  color: #5c4a2a;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.likes-tip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 38px;
+  padding: 16px 18px;
+  border: 1px solid #ece5da;
+  border-radius: 16px;
+  background: #fff;
+  text-align: left;
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #2b2b2b;
+  }
+
+  strong { font-weight: 700; }
+}
+
+.likes-tip-icon {
+  flex-shrink: 0;
+  width: 21px;
+  height: 21px;
+
+  svg { display: block; width: 100%; height: 100%; }
+  circle { fill: #3b82f6; }
+  path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+/* --- MODO ESCURO: mesmo layout, superfícies do tema --- */
+.dark-mode,
+html.dark:not(.light-mode) {
+  .likes-screen-wrapper { background-color: var(--color-background); color: var(--color-text); }
+
+  .likes-title,
+  .likes-empty-title { color: var(--color-text); }
+
+  .likes-subtitle,
+  .likes-empty-text { color: var(--color-text-secondary); }
+
+  .likes-safety-btn,
+  .likes-tip,
+  .likes-radar-label {
+    background: var(--color-section-gray);
+    border-color: var(--color-border);
+    color: var(--color-text);
+  }
+
+  .likes-tip p { color: var(--color-text); }
+
+  .likes-tabs { background-color: var(--color-section-gray); }
+  .likes-tab { color: var(--color-text-secondary); }
+  // a aba ativa "salta" do fundo, como no tema claro
+  .likes-tab.is-active { background-color: #333; color: var(--color-text); }
+
+  .likes-radar-center { background: var(--color-section-gray); }
+  .likes-radar-center svg { stroke: var(--color-text); }
+
+  .likes-empty-link { color: var(--color-primary); }
 }
 
 

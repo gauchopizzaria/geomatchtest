@@ -1,0 +1,38 @@
+<%# Estado vazio das abas de Curtidas: radar com o seu ponto no centro.
+    O "300 m" é ilustrativo — o raio real do radar é escolhido no mapa. %>
+<div class="likes-empty">
+  <div class="likes-radar" aria-hidden="true">
+    <svg class="likes-radar-rings" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="98"/>
+      <circle cx="100" cy="100" r="63"/>
+    </svg>
+    <span class="likes-radar-label">300 m</span>
+    <span class="likes-radar-center">
+      <svg viewBox="0 0 24 24">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+    </span>
+  </div>
+
+  <h2 class="likes-empty-title"><%= title %></h2>
+  <p class="likes-empty-text"><%= text %></p>
+
+  <%= link_to discover_3d_path, class: "likes-empty-cta" do %>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+      <line x1="8" y1="2" x2="8" y2="18"/>
+      <line x1="16" y1="6" x2="16" y2="22"/>
+    </svg>
+    Ver quem está por perto
+  <% end %>
+
+  <%= link_to "Melhorar meu perfil", edit_profile_path, class: "likes-empty-link" %>
+
+  <div class="likes-tip">
+    <span class="likes-tip-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>
+    </span>
+    <p><strong>Dica:</strong> perfis verificados passam mais confiança para quem está por perto.</p>
+  </div>
+</div>
