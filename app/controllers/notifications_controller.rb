@@ -31,6 +31,11 @@ class NotificationsController < ApplicationController
                             .where("user_id IN (:ids) OR matched_user_id IN (:ids)", ids: actor_ids)
                             .index_by { |match| match.user_id == current_user.id ? match.matched_user_id : match.user_id }
 
+    # Painel de upgrade de quem não pode ver quem curtiu (mockup: Gold). Nome e
+    # preço vêm do plano no banco — o painel nunca mostra um preço diferente do
+    # que o checkout cobra.
+    @upsell_plan = Plan.active.find_by(code: "gold") unless current_user.can_see_who_liked_me?
+
     # Marca todas como lidas ao visitar a página
     current_user.notifications.unread.update_all(read_at: Time.current)
   end

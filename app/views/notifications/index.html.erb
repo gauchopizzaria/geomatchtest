@@ -4,10 +4,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <% end %>
 
-<% received = @notifications.to_a %>
-<% sent     = @my_likes.to_a %>
+<% received        = @notifications.to_a %>
+<% sent            = @my_likes.to_a %>
+<% locked_received = !current_user.can_see_who_liked_me? %>
 
-<div class="likes-screen-wrapper" data-controller="likes-tabs">
+<div class="likes-screen-wrapper" data-controller="likes-tabs likes-upsell">
   <div class="likes-column">
 
     <%# --- 1. HEADER --- %>
@@ -46,9 +47,9 @@
     <%# ========================================================= %>
     <section class="likes-panel" data-likes-tabs-target="panel" data-panel="received">
       <% if received.any? %>
-        <%# --- Novas hoje: quem curtiu desde a meia-noite (fuso do app) --- %>
-        <% locked_received = !current_user.can_see_who_liked_me? %>
-        <% today = received.select { |n| n.created_at >= Time.zone.now.beginning_of_day } %>
+        <%# --- Novas hoje: quem curtiu desde a meia-noite (fuso do app).
+            Não aparece no plano que não mostra quem curtiu (mockup do Free). --- %>
+        <% today = locked_received ? [] : received.select { |n| n.created_at >= Time.zone.now.beginning_of_day } %>
         <% if today.any? %>
           <div class="likes-today">
             <div class="likes-today-head">
@@ -58,10 +59,9 @@
             <div class="likes-today-row">
               <% today.each do |notification| %>
                 <% person = notification.actor %>
-                <%# Plano que não mostra quem curtiu: avatar borrado e sem nome %>
-                <%= link_to (locked_received ? plans_path : user_path(person)), class: ["likes-today-item", ("locked" if locked_received)] do %>
+                <%= link_to user_path(person), class: "likes-today-item" do %>
                   <span class="likes-today-ring"><%= image_tag person.avatar_url, alt: "" %></span>
-                  <span class="likes-today-name"><%= locked_received ? "Alguém" : person.display_name.split.first %></span>
+                  <span class="likes-today-name"><%= person.display_name.split.first %></span>
                 <% end %>
               <% end %>
             </div>
@@ -126,6 +126,44 @@
     </section>
 
   </div>
+
+  <%# ========================================================= %>
+  <%# PAINEL DE UPGRADE (plano que não mostra quem curtiu)
+      Sobe ao tocar num card borrado — likes_upsell_controller.js %>
+  <%# ========================================================= %>
+  <% if locked_received && received.any? %>
+    <div class="likes-upsell" data-likes-upsell-target="sheet" hidden>
+      <div class="likes-upsell-backdrop" data-action="click->likes-upsell#close"></div>
+
+      <div class="likes-upsell-panel" role="dialog" aria-modal="true" aria-labelledby="likes-upsell-title">
+        <div class="likes-upsell-avatars" aria-hidden="true">
+          <% received.first(3).each do |notification| %>
+            <span class="likes-upsell-avatar"><%= image_tag notification.actor.avatar_url, alt: "" %></span>
+          <% end %>
+          <% if received.size > 3 %>
+            <span class="likes-upsell-more">+<%= received.size - 3 %></span>
+          <% end %>
+        </div>
+
+        <h2 class="likes-upsell-title" id="likes-upsell-title">
+          <%= received.size %> <%= received.size == 1 ? "pessoa por perto curtiu" : "pessoas por perto curtiram" %> você
+        </h2>
+        <p class="likes-upsell-text">
+          Com o <%= @upsell_plan&.name || "Gold" %> você vê a lista de quem curtiu você e não tem teto de curtidas nem de mensagens.
+        </p>
+
+        <% if @upsell_plan %>
+          <%# Mesmo fluxo da página de planos: POST /checkout sem Turbo -> Mercado Pago %>
+          <%= button_to "Ver quem me curtiu", checkout_path(plan_id: @upsell_plan.id),
+                        method: :post, form: { data: { turbo: false } },
+                        class: "likes-upsell-cta", form_class: "likes-upsell-form" %>
+          <p class="likes-upsell-price"><%= plan_price_per_period(@upsell_plan) %> · Cancele quando quiser</p>
+        <% else %>
+          <%= link_to "Ver quem me curtiu", plans_path, class: "likes-upsell-cta" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 </div>
 
 <%# Modal de limite de curtidas: LikesController responde com turbo_stream.update aqui %>

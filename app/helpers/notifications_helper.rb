@@ -2,7 +2,8 @@ module NotificationsHelper
   # "~150 m de você" / "~1,2 km de você": distância APROXIMADA (múltiplos de
   # 50 m) entre quem vê e a outra pessoa. Não aparece se faltar localização de
   # alguém ou se a pessoa estiver invisível / tiver desligado o compartilhamento.
-  def approx_distance_from_you(viewer, other)
+  # suffix: false devolve só "~150 m" (pílula dos cards borrados do plano grátis).
+  def approx_distance_from_you(viewer, other, suffix: true)
     return nil if other.invisible? || other.share_location == false
     return nil if [viewer.latitude, viewer.longitude, other.latitude, other.longitude].any?(&:blank?)
 
@@ -17,7 +18,13 @@ module NotificationsHelper
       else                  "~#{km.round} km"
       end
 
-    "#{label} de você"
+    suffix ? "#{label} de você" : label
+  end
+
+  # Preço do painel de upgrade: "R$ 49,90/mês" (ou "a cada N meses").
+  def plan_price_per_period(plan)
+    months = plan.duration_months.to_i
+    months <= 1 ? "#{plan.price.format}/mês" : "#{plan.price.format} a cada #{months} meses"
   end
 
   # Pílula "Ativa agora" dos cards — só para quem está online e não invisível.

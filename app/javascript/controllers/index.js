@@ -69,3 +69,6 @@ application.register("balance-visibility", BalanceVisibilityController)
 
 import LikesTabsController from "./likes_tabs_controller"
 application.register("likes-tabs", LikesTabsController)
+
+import LikesUpsellController from "./likes_upsell_controller"
+application.register("likes-upsell", LikesUpsellController)

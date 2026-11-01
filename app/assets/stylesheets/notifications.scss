@@ -217,11 +217,6 @@
   }
 }
 
-.likes-today-item.locked .likes-today-ring img {
-  filter: blur(6px);
-  transform: scale(1.15);
-}
-
 .likes-today-name {
   max-width: 64px;
   font-size: 12.5px;
@@ -408,10 +403,182 @@
   stroke: #c9a052;
 }
 
-/* Plano que não mostra quem curtiu: foto borrada */
+/* --- Plano que não mostra quem curtiu (mockup do Free) ---
+   Foto bem borrada, véu claro embaixo, barra no lugar do nome e a distância */
 .like-card.locked .like-card-img {
-  filter: blur(12px);
-  transform: scale(1.1);
+  filter: blur(16px);
+  transform: scale(1.15);
+}
+
+.like-card-veil {
+  position: absolute;
+  inset: 45% 0 0 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 100%);
+  pointer-events: none;
+}
+
+.like-card.locked .like-card-info {
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.like-card-skeleton {
+  width: 84px;
+  height: 14px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.like-card-distance-pill {
+  display: inline-flex;
+  align-items: center;
+  min-width: 84px;
+  height: 20px;
+  padding: 0 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #8b8279;
+  font-size: 12.5px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+/* --- PAINEL DE UPGRADE (likes_upsell_controller.js) --- */
+.likes-upsell {
+  position: fixed;
+  inset: 0;
+  z-index: 1500; /* acima da barra inferior web (.sidebar: 1000) */
+}
+
+/* Toque fora fecha; o mockup não escurece a tela */
+.likes-upsell-backdrop {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+
+.likes-upsell-panel {
+  position: absolute;
+  left: 50%;
+  /* 20px acima da barra inferior web (~70px + área segura) */
+  bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  width: calc(100% - 40px);
+  max-width: 520px;
+  padding: 26px 20px 20px;
+  border-radius: 24px;
+  background: #1e1e1e;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  box-sizing: border-box;
+  transform: translate(-50%, calc(100% + 120px));
+  transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* App iOS: a tab bar é nativa e já está na área segura */
+body.turbo-native .likes-upsell-panel {
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+.likes-upsell.is-open .likes-upsell-panel {
+  transform: translate(-50%, 0);
+}
+
+.likes-upsell-avatars {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 19px;
+}
+
+.likes-upsell-avatar,
+.likes-upsell-more {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  margin-left: -6px;
+  border-radius: 50%;
+  overflow: hidden;
+
+  &:first-child { margin-left: 0; }
+}
+
+/* Borrado inclusive na borda: ninguém é reconhecível */
+.likes-upsell-avatar {
+  background: #8a7a68;
+  filter: blur(3px);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.likes-upsell-more {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3e1c6;
+  color: #1c1c1c;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.likes-upsell-title {
+  margin: 0;
+  font-size: 20.4px;
+  font-weight: 800;
+  line-height: 1.17;
+  letter-spacing: -0.4px;
+  color: #fff;
+}
+
+.likes-upsell-text {
+  margin: 11px auto 0;
+  max-width: 290px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #cfcac4;
+  letter-spacing: -0.1px;
+}
+
+.likes-upsell-form { margin: 18.5px 0 0; }
+
+.likes-upsell-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 16px;
+  background: #c9a052;
+  color: #1c1a14;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &:active { transform: scale(0.98); }
+}
+
+/* Sem plano Gold no banco o CTA é um link (sem o <form> que dá a margem) */
+a.likes-upsell-cta { margin-top: 18.5px; }
+
+.likes-upsell-price {
+  margin: 9px 0 0;
+  font-size: 12px;
+  color: #a8a29c;
+  line-height: 1.25;
+  letter-spacing: -0.1px;
 }
 
 /* --- 4. ESTADO VAZIO (radar com o seu ponto no centro) --- */
@@ -615,4 +782,5 @@ html.dark:not(.light-mode) {
   .likes-today-name { color: var(--color-text); }
   .likes-today-count { color: var(--color-text-secondary); }
   .likes-today-ring { background: var(--color-background); }
+  .likes-upsell-panel { border: 1px solid #2e2e2e; }
 }

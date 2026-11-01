@@ -2,36 +2,45 @@
     É uma <div>: o coração é um form e não pode ficar dentro de um <a>. O link
     do card fica "esticado" por cima da foto e o coração fica acima do link.
 
-    Plano que não mostra quem curtiu (can_see_who_liked_me?): foto borrada, sem
-    nome, e o coração leva aos planos — curtir de volta revelaria a pessoa no
-    modal de match. %>
-<% actor      = notification.actor %>
-<% locked     = !current_user.can_see_who_liked_me? %>
-<% first_name = actor.display_name.split.first %>
-<% online     = online_now_label(actor) %>
-<% distance   = approx_distance_from_you(current_user, actor) %>
-<% heart_svg  = capture do %>
-  <svg class="like-card-heart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-<% end %>
+    Plano que não mostra quem curtiu (can_see_who_liked_me?): foto bem borrada,
+    só uma barra no lugar do nome e a distância, sem coração (curtir de volta
+    revelaria a pessoa no modal de match). Tocar abre o painel de upgrade
+    (likes_upsell_controller.js); sem JS, o link leva aos planos. %>
+<% actor  = notification.actor %>
+<% locked = !current_user.can_see_who_liked_me? %>
 
-<div class="like-card <%= 'locked' if locked %>" data-notification-id="<%= notification.id %>">
-  <%= image_tag actor.avatar_url, class: "like-card-img", alt: "" %>
-  <div class="like-card-gradient"></div>
+<% if locked %>
+  <% distance = approx_distance_from_you(current_user, actor, suffix: false) %>
+  <div class="like-card locked" data-notification-id="<%= notification.id %>">
+    <%= image_tag actor.avatar_url, class: "like-card-img", alt: "" %>
+    <div class="like-card-veil"></div>
 
-  <% if online %>
-    <span class="like-card-online"><span class="like-card-online-dot"></span><%= online %></span>
+    <div class="like-card-info" aria-hidden="true">
+      <span class="like-card-skeleton"></span>
+      <span class="like-card-distance-pill"><%= distance %></span>
+    </div>
+
+    <%= link_to plans_path, class: "like-card-link",
+                data: { action: "likes-upsell#open" },
+                aria: { label: "Descobrir quem te curtiu" } do %><% end %>
+  </div>
+<% else %>
+  <% first_name = actor.display_name.split.first %>
+  <% online     = online_now_label(actor) %>
+  <% distance   = approx_distance_from_you(current_user, actor) %>
+  <% heart_svg  = capture do %>
+    <svg class="like-card-heart-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
   <% end %>
 
-  <div class="like-card-info">
-    <% if locked %>
-      <p class="like-card-name">
-        <% if actor.age %><strong><%= actor.age %></strong> anos<% else %><strong>Alguém</strong><% end %>
-      </p>
-      <p class="like-card-meta">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        Ver quem é
-      </p>
-    <% else %>
+  <div class="like-card" data-notification-id="<%= notification.id %>">
+    <%= image_tag actor.avatar_url, class: "like-card-img", alt: "" %>
+    <div class="like-card-gradient"></div>
+
+    <% if online %>
+      <span class="like-card-online"><span class="like-card-online-dot"></span><%= online %></span>
+    <% end %>
+
+    <div class="like-card-info">
       <p class="like-card-name">
         <strong><%= first_name %></strong> <%= actor.age %>
         <% if actor.verified? %>
@@ -44,24 +53,21 @@
           <%= distance %>
         </p>
       <% end %>
+    </div>
+
+    <%= link_to user_path(actor), class: "like-card-link", aria: { label: "Ver perfil de #{first_name}" } do %><% end %>
+
+    <%# Coração: curtir de volta — a pessoa já te curtiu, então vira match %>
+    <% if match %>
+      <%= link_to match_path(match), class: "like-card-heart is-liked", aria: { label: "Conversar com #{first_name}" } do %><%= heart_svg %><% end %>
+    <% elsif liked_back %>
+      <span class="like-card-heart is-liked" role="img" aria-label="Você já curtiu <%= first_name %>"><%= heart_svg %></span>
+    <% else %>
+      <%= button_to likes_path,
+                    params: { user_id: actor.id, source: "likes" },
+                    class: "like-card-heart",
+                    form_class: "like-card-heart-form",
+                    aria: { label: "Curtir #{first_name} de volta" } do %><%= heart_svg %><% end %>
     <% end %>
   </div>
-
-  <%= link_to (locked ? plans_path : user_path(actor)), class: "like-card-link",
-              aria: { label: locked ? "Ver planos para descobrir quem te curtiu" : "Ver perfil de #{first_name}" } do %><% end %>
-
-  <%# Coração: curtir de volta — a pessoa já te curtiu, então vira match %>
-  <% if locked %>
-    <%= link_to plans_path, class: "like-card-heart", aria: { label: "Ver planos para curtir de volta" } do %><%= heart_svg %><% end %>
-  <% elsif match %>
-    <%= link_to match_path(match), class: "like-card-heart is-liked", aria: { label: "Conversar com #{first_name}" } do %><%= heart_svg %><% end %>
-  <% elsif liked_back %>
-    <span class="like-card-heart is-liked" role="img" aria-label="Você já curtiu <%= first_name %>"><%= heart_svg %></span>
-  <% else %>
-    <%= button_to likes_path,
-                  params: { user_id: actor.id, source: "likes" },
-                  class: "like-card-heart",
-                  form_class: "like-card-heart-form",
-                  aria: { label: "Curtir #{first_name} de volta" } do %><%= heart_svg %><% end %>
-  <% end %>
-</div>
+<% end %>

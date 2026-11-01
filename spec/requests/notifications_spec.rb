@@ -89,18 +89,52 @@ RSpec.describe "Curtidas (/notifications)", type: :request do
   end
 
   describe "plano que não mostra quem curtiu" do
-    let(:free_me) { create(:user, onboarding_completed: true, plan: free_plan) }
+    let(:free_me) { create(:user, onboarding_completed: true, plan: free_plan, latitude: -14.7935, longitude: -39.2803) }
+    let!(:gold)   do
+      create(:plan, code: "gold", name: "Gold", price_cents: 4990, duration_months: 1,
+                    features: { "see_who_liked_me" => true, "likes_right_unlimited" => true })
+    end
 
-    it "não revela nome nem permite curtir de volta (curtir mostraria a pessoa no match)" do
+    it "não revela ninguém: sem nome, sem \"Novas hoje\" e sem curtir de volta (o match mostraria a pessoa)" do
       liked_by(person("Ana Souza"), recipient: free_me)
 
       body = open_page(as: free_me)
 
       expect(body).not_to include("Ana")
-      expect(body).to include("Alguém")
+      expect(body).not_to include("Novas hoje")
       expect(body).not_to include('action="/likes"')
-      expect(body).to include('class="like-card-heart" aria-label="Ver planos para curtir de volta" href="/plans"')
+      expect(body).not_to include("like-card-heart")
+      expect(body).to include('data-action="likes-upsell#open"')
     end
+
+    it "mostra só a distância aproximada no card borrado" do
+      ana = person("Ana Souza")
+      ana.update_columns(latitude: -14.7935 + 0.00135, longitude: -39.2803) # ~150 m
+      liked_by(ana, recipient: free_me)
+
+      body = open_page(as: free_me)
+
+      expect(body).to include('<span class="like-card-distance-pill">~150 m</span>')
+    end
+
+    it "traz o painel de upgrade com a contagem e o preço real do Gold, indo direto ao checkout" do
+      %w[Ana Bia Carla Dani].each { |name| liked_by(person("#{name} Teste"), recipient: free_me) }
+
+      body = open_page(as: free_me)
+      sheet = body[/<div class="likes-upsell".*?<\/div>\s*<\/div>\s*<\/div>/m]
+
+      expect(sheet).to include("4 pessoas por perto curtiram você")
+      expect(sheet).to include("+1")
+      expect(sheet).to include("Com o Gold você vê a lista de quem curtiu você")
+      expect(sheet).to include("R$ 49,90/mês · Cancele quando quiser")
+      expect(sheet).to include(%(action="/checkout?plan_id=#{gold.id}"))
+    end
+  end
+
+  it "não mostra o painel de upgrade para quem já pode ver quem curtiu" do
+    liked_by(person("Ana Souza"))
+
+    expect(open_page).not_to include("likes-upsell-panel")
   end
 
   describe "POST /likes vindo da tela de Curtidas (source=likes)" do
