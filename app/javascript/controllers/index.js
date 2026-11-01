@@ -63,3 +63,6 @@ application.register("mimo", MimoController)
 
 import WalletController from "./wallet_controller"
 application.register("wallet", WalletController)
+
+import BalanceVisibilityController from "./balance_visibility_controller"
+application.register("balance-visibility", BalanceVisibilityController)

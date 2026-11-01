@@ -152,15 +152,42 @@
 
   <%# --- 3.5. CARTEIRA DIGITAL (Mimos) — acesso rápido a saldo e saques ---
       wallet pode ser nil pra quem nunca recebeu um Mimo ainda (has_one, sem
-      criação automática) — &. + fallback garantem "R$ 0,00" em vez de erro. %>
-  <%= link_to mimo_wallet_page_path, class: "verification-banner" do %>
+      criação automática) — &. + fallback garantem "R$ 0,00" em vez de erro.
+
+      O card é uma <div> porque o botão do olho não pode ficar dentro de um <a>;
+      o link do título é "esticado" pelo CSS e o card inteiro continua abrindo a
+      carteira. Saldo oculto/visível vem do cookie hide_wallet_balance (gravado
+      pelo balance_visibility_controller.js): o servidor já desenha o estado certo,
+      então o valor nunca aparece de relance para quem escolheu ocultar. %>
+  <% balance_hidden = cookies[:hide_wallet_balance] == "1" %>
+  <%= tag.div class: ["verification-banner", "wallet-banner", ("is-balance-hidden" if balance_hidden)],
+              data: { controller: "balance-visibility", balance_visibility_hidden_value: balance_hidden } do %>
     <div class="icon-box">
       <span class="wallet-banner-icon">💰</span>
     </div>
     <div class="banner-text">
-      <strong>Minha Carteira</strong>
+      <%= link_to mimo_wallet_page_path, class: "wallet-banner-link" do %>
+        <strong>Minha Carteira</strong>
+      <% end %>
       <p class="banner-description">
-        Saldo disponível: <strong class="wallet-banner-balance"><%= @user.wallet&.balance&.format || "R$ 0,00" %></strong>
+        Saldo disponível:
+        <strong class="wallet-banner-balance wallet-banner-amount"><%= @user.wallet&.balance&.format || "R$ 0,00" %></strong>
+        <strong class="wallet-banner-balance wallet-banner-mask" aria-hidden="true">R$ ••••</strong>
+        <button type="button" class="wallet-eye-btn"
+                data-action="balance-visibility#toggle"
+                data-balance-visibility-target="button"
+                aria-label="<%= balance_hidden ? "Mostrar saldo" : "Ocultar saldo" %>">
+          <%# Olho aberto = saldo visível %>
+          <svg class="wallet-eye wallet-eye--open" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <%# Olho fechado (pálpebra com cílios) = saldo oculto %>
+          <svg class="wallet-eye wallet-eye--closed" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2 10c2.6 3.6 6 5.5 10 5.5s7.4-1.9 10-5.5"/>
+            <path d="M4.5 13.4 3 15.6M9 15.2l-.7 2.6M15 15.2l.7 2.6M19.5 13.4l1.5 2.2"/>
+          </svg>
+        </button>
       </p>
     </div>
     <div class="banner-arrow">›</div>

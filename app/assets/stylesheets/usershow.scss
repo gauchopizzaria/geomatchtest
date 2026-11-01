@@ -358,6 +358,71 @@ html.dark:not(.light-mode) {
   font-weight: 700;
 }
 
+/* O card da carteira é uma <div> (o botão do olho não pode ficar dentro de um
+   <a>). O link do título é "esticado" com ::after para cobrir o card inteiro,
+   com o mesmo toque/efeito de hover dos outros banners (a.verification-banner). */
+.wallet-banner {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover { transform: scale(1.02); }
+}
+
+.wallet-banner-link {
+  color: inherit;
+  text-decoration: none;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+  }
+}
+
+/* Olho: fica por cima do link esticado, então tocar nele não abre a carteira */
+.wallet-eye-btn {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: -8px 0 -8px 2px; /* área de toque maior sem aumentar a altura da linha */
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-text-secondary);
+  vertical-align: middle;
+  cursor: pointer;
+
+  &:active { background-color: rgba(128, 128, 128, 0.15); }
+}
+
+.wallet-eye {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Estado inicial vem do servidor (cookie); o controller só alterna a classe */
+.wallet-eye--closed,
+.wallet-banner-mask { display: none; }
+
+.wallet-banner.is-balance-hidden {
+  .wallet-banner-amount,
+  .wallet-eye--open { display: none; }
+
+  .wallet-banner-mask { display: inline; }
+  .wallet-eye--closed { display: block; }
+}
+
 /* 4. Seção Destaque */
 .highlight-section {
   display: flex;
