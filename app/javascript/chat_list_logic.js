@@ -25,8 +25,13 @@ function initSwipe(container) {
   let startX = 0, startY = 0, currentX = 0;
   let isSwiped = false, isHorizontal = null;
 
-  const snapOpen  = () => { content.style.transform = `translateX(-${ACTIONS_WIDTH}px)`; isSwiped = true;  content.classList.add('is-swiped');    };
-  const snapClose = () => { content.style.transform = '';                                 isSwiped = false; content.classList.remove('is-swiped'); };
+  // is-dragging deixa os botões visíveis (a linha é transparente sobre o fundo);
+  // ao fechar, só sai depois que a animação de volta termina.
+  const snapOpen  = () => { content.style.transform = `translateX(-${ACTIONS_WIDTH}px)`; isSwiped = true;  content.classList.add('is-swiped'); container.classList.add('is-dragging'); };
+  const snapClose = () => {
+    content.style.transform = ''; isSwiped = false; content.classList.remove('is-swiped');
+    setTimeout(() => { if (!content.classList.contains('is-swiped')) container.classList.remove('is-dragging'); }, 240);
+  };
 
   container.snapClose = snapClose; // expõe para o modal poder fechar
 
@@ -46,6 +51,7 @@ function initSwipe(container) {
     }
     if (!isHorizontal) return;
     e.preventDefault();
+    container.classList.add('is-dragging');
     const next = Math.min(0, Math.max(-ACTIONS_WIDTH, currentX + dx));
     content.style.transform = `translateX(${next}px)`;
   }, { passive: false });
@@ -64,7 +70,7 @@ function initSwipe(container) {
 function closeAllSwipes(except = null) {
   document.querySelectorAll('.swipe-content.is-swiped').forEach(el => {
     const c = el.closest('.swipe-container');
-    if (c !== except) { el.style.transform = ''; el.classList.remove('is-swiped'); }
+    if (c !== except) { el.style.transform = ''; el.classList.remove('is-swiped'); c?.classList.remove('is-dragging'); }
   });
 }
 
@@ -190,6 +196,7 @@ function bindActions(container) {
         const content = container.querySelector('.swipe-content');
         content.style.transform = '';
         content.classList.remove('is-swiped');
+        container.classList.remove('is-dragging');
       }
     }).catch(console.error);
   });
@@ -221,8 +228,38 @@ function injectModalStyles() {
   document.head.appendChild(s);
 }
 
+// ── Busca por nome (lupa do cabeçalho) ───────────────────────────────────────
+function initSearch() {
+  const toggle = document.getElementById('conversations-search-toggle');
+  const field  = document.getElementById('conversations-search-field');
+  const input  = document.getElementById('conversations-search-input');
+  if (!toggle || !field || !input || toggle.dataset.bound) return;
+  toggle.dataset.bound = 'true';
+
+  const empty = document.getElementById('conversations-search-empty');
+
+  const filter = () => {
+    const term = input.value.trim().toLowerCase();
+    let visible = 0;
+    document.querySelectorAll('#conversations-master-list .swipe-container').forEach(row => {
+      const match = !term || (row.dataset.searchName || '').includes(term);
+      row.hidden = !match;
+      if (match) visible++;
+    });
+    if (empty) empty.hidden = visible > 0;
+  };
+
+  toggle.addEventListener('click', () => {
+    field.hidden = !field.hidden;
+    if (field.hidden) { input.value = ''; filter(); } else { input.focus(); }
+  });
+  input.addEventListener('input', filter);
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('turbo:load', () => {
+  initSearch();
+
   const list = document.getElementById('conversations-master-list');
   if (!list) return;
 

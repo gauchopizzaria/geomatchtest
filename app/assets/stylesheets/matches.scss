@@ -1,11 +1,15 @@
 // =========================================================
-// MENSAGENS - TEMA DARK PREMIUM (TEXTOS PEQUENOS)
+// MENSAGENS (/matches)
 // =========================================================
 
 .matches-screen-wrapper {
-  background-color: var(--color-background);
+  // Fundo bege com grade de pontinhos lilás
+  background-color: #f3eee3;
+  background-image: radial-gradient(circle, rgba(140, 140, 215, 0.35) 1px, transparent 1.4px);
+  background-size: 21px 21px;
+  background-position: 4px 4px;
   width: 100%;
-  color: var(--color-text);
+  color: #2b2622;
   font-family: 'Poppins', sans-serif;
   overflow-x: hidden;
 }
@@ -22,75 +26,95 @@
   padding-top: env(safe-area-inset-top);
 }
 
-/* --- 1. HEADER E ÍCONES --- */
+// Curvas de nível decorativas (rolam junto com o conteúdo)
+.msg-topo {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+
+  g { stroke: #b9ab97; opacity: 0.5; }
+
+  &--top    { top: calc(env(safe-area-inset-top) - 10px); right: -30px; width: 230px; height: 260px; }
+  &--bottom { top: 640px; left: 0; width: 150px; height: 220px; }
+}
+
+.matches-header,
+.msg-search-field,
+.recent-matches-section,
+.conversations-section {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- 1. HEADER --- */
 .matches-header {
-  padding: 20px 20px 10px 20px;
+  padding: 26px 18px 0 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* Título Principal: MENSAGENS (Bem menor agora) */
-.header-title-svg-small {
-  height: 22px; /* Reduzido de 28px/auto para 22px */
+.header-title-img {
+  height: 23px;
   width: auto;
   display: block;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.12));
 }
 
-/* Container dos ícones do topo (Pílula Cinza) */
-.header-right-actions {
-  display: flex;
-  align-items: center;
-}
-
-.icons-pill {
-  background-color: var(--color-section-light);
-  border-radius: 20px;
-  padding: 6px 14px;
-  display: flex;
-  gap: 15px;
-  border: 1px solid var(--color-border);
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
+.msg-search-btn {
+  width: 42px;
+  height: 28px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  color: #6b6b6b;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.8;
-  transition: opacity 0.2s;
-  color: var(--color-text);
+  padding: 0;
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
 
-  &:hover { opacity: 1; }
+  svg { width: 17px; height: 17px; }
 }
 
-/* --- TÍTULOS DE SEÇÃO (Matches / Conversas) --- */
-.section-title-wrapper {
-  padding: 10px 20px 15px 20px;
+.msg-search-field {
+  padding: 12px 18px 0;
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    background: #fff;
+    padding: 9px 14px;
+    font: inherit;
+    font-size: 0.85rem;
+    color: #2b2622;
+    outline: none;
+  }
 }
 
-/* Subtítulos (Bem discretos) */
-.section-subtitle-svg-small {
-  height: 13px; /* Bem pequeno, estilo iOS label */
-  width: auto;
-  display: block;
-  opacity: 0.7; /* Levemente transparente para não brigar com o título */
+/* --- TÍTULOS DE SEÇÃO --- */
+.msg-section-title {
+  margin: 0;
+  padding: 18px 18px 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #2e2924;
+  letter-spacing: -0.1px;
 }
 
-/* --- 2. CAROUSEL --- */
+/* --- 2. MATCHES RECENTES --- */
 .recent-matches-section {
-  padding-bottom: 20px;
+  padding-bottom: 4px;
 }
 
 .matches-carousel {
   display: flex;
-  gap: 15px;
-  padding: 0 20px;
+  gap: 14px;
+  padding: 0 18px 4px;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -101,93 +125,111 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   text-decoration: none;
   flex-shrink: 0;
-  width: 75px;
+  width: 72px;
 }
 
-.avatar-wrapper {
-  position: relative;
-  width: 74px;
-  height: 74px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Avatar do Usuário */
-.user-avatar-img {
-  width: 64px;
-  height: 64px;
+// Avatar de match: aro fino prateado + respiro creme
+.match-ring {
+  width: 66px;
+  height: 66px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--color-background);
+  padding: 4px;
+  box-sizing: border-box;
+  background: #f6f1e8;
+  border: 1.5px solid #a39a91;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Aurea Dourada */
-.gold-ring-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
+.user-avatar-img {
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  z-index: 2;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 
 .match-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
   font-size: 0.8rem;
-  color: var(--color-text);
-  font-weight: 500;
+  color: #2b2622;
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  text-align: center;
 }
 
-.gold-text { color: hsl(46, 57%, 78%); font-weight: 700; }
+.gold-text { color: #b08d5f; font-weight: 500; }
 
-/* Ícone de Curtidas */
-.likes-item .blur-bg {
-  width: 64px;
-  height: 64px;
+// Curtidas: aro perolado/dourado com pontilhado
+.likes-ring {
+  position: relative;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  background: var(--color-section-gray);
-  border: 2px solid hsl(46, 57%, 78%);
+  padding: 5px;
+  box-sizing: border-box;
+  background: conic-gradient(from 200deg, #f5e6c4, #e9d3f1, #fff4dc, #d9c3a0, #efe0f6, #f5e6c4);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
 }
 
-.likes-icon-overlay {
-  position: absolute;
-  z-index: 5;
+.likes-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #f8f4ec;
+  border: 1px dashed rgba(176, 141, 95, 0.55);
+  box-sizing: border-box;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
 .map-heart-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
+}
+
+.likes-gem {
+  position: absolute;
+  right: -1px;
+  bottom: 1px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff8ec;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg { width: 14px; height: 14px; }
 }
 
 .likes-badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  background-color: hsl(46, 57%, 78%);
-  color: #000;
-  font-size: 0.7rem;
-  font-weight: bold;
-  height: 20px;
-  min-width: 20px;
-  border-radius: 10px;
+  top: -2px;
+  right: -2px;
+  background-color: #b08d5f;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 6;
-  border: 2px solid var(--color-background);
+  border: 2px solid #f3eee3;
 }
 
 /* --- 3. CONVERSAS --- */
@@ -198,15 +240,14 @@
 .conversations-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 0 20px;
+  padding: 0 18px;
 }
 
 /* ── Swipe-to-action ────────────────────────────────────── */
 .swipe-container {
   position: relative;
   overflow: hidden;
-  border-radius: 14px;
+  border-bottom: 1px solid rgba(43, 38, 34, 0.12);
 }
 
 .swipe-actions {
@@ -217,6 +258,14 @@
   display: flex;
   width: 148px;
   z-index: 1;
+  // A linha é transparente (deixa ver o fundo pontilhado), então os botões só
+  // aparecem enquanto o usuário arrasta ou com a linha aberta.
+  visibility: hidden;
+}
+
+.swipe-container.is-dragging .swipe-actions,
+.swipe-container:has(.swipe-content.is-swiped) .swipe-actions {
+  visibility: visible;
 }
 
 .swipe-btn {
@@ -236,7 +285,7 @@
 }
 
 .swipe-btn-clear { background: #e53935; }
-.swipe-btn-block { background: #37474f; border-radius: 0 14px 14px 0; }
+.swipe-btn-block { background: #37474f; }
 
 .swipe-content {
   position: relative;
@@ -245,7 +294,12 @@
   transform: translateX(0);
   transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
-  background-color: var(--color-background);
+}
+
+// Arrastada, a linha precisa de fundo para cobrir os botões que ficam por baixo
+.swipe-container.is-dragging .swipe-content,
+.swipe-content.is-swiped {
+  background-color: #f3eee3;
 }
 
 .swipe-content.is-swiped {
@@ -256,32 +310,32 @@
 .conversation-row {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 14px;
   text-decoration: none;
   width: 100%;
+  padding: 11px 0 11px 2px;
+  min-height: 76px;
+  box-sizing: border-box;
 }
 
 .conv-avatar-container {
-  position: relative;
+  flex-shrink: 0;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  padding: 2px;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid #8f857c;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
 }
 
 .conv-avatar {
-  width: 60px;
-  height: 60px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-}
-
-.conv-avatar-placeholder {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--color-section-gray);
-  color: var(--color-text);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.5rem;
+  display: block;
 }
 
 .conv-details {
@@ -289,63 +343,106 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
-.conv-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .conv-name {
-  color: var(--color-text);
-  font-size: 1rem;
+  color: #221d19;
+  font-size: 0.98rem;
   font-weight: 600;
-}
-
-.conv-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .conv-last-message {
-  color: var(--color-text-secondary);
+  color: #6b5a50;
   font-size: 0.85rem;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
 }
 
-.msg-prefix { color: var(--color-text-secondary); margin-right: 4px; }
+.msg-prefix { margin-right: 0; }
+
+// Coluna da direita: selo de verificado em cima, "Sua vez" embaixo
+.conv-meta {
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 2px 0;
+}
+
+.conv-verified {
+  display: flex;
+  margin-right: 6px;
+  // Sempre no topo (ao lado do nome), mesmo sem o "Sua vez" embaixo
+  margin-bottom: auto;
+
+  svg { width: 17px; height: 17px; }
+  circle { fill: #4a8fe0; stroke: #fff; stroke-width: 1.5; }
+  path { stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+}
 
 .badge-your-turn {
-  background-color: var(--color-section-light);
-  color: var(--color-text);
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #f7d9d6;
+  border: 1px solid #e3aaa5;
+  color: #8a3a36;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px 2px 6px;
+  border-radius: 10px;
   white-space: nowrap;
+
+  svg { width: 11px; height: 11px; }
 }
 
 .empty-conversations {
   text-align: center;
-  color: var(--color-text-secondary);
+  color: #6b5a50;
   padding: 20px;
 }
 
-/* Ícone de verificação: sempre pequeno */
-img[alt="Perfil Verificado"],
-.match-name img,
-.conv-header img {
-  max-width: 16px !important;
-  max-height: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  display: inline-block !important;
+/* Ícone de verificado no carrossel: sempre pequeno */
+.verified-mini {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* --- MODO ESCURO: mantém o layout, troca só as superfícies --- */
+.dark-mode .matches-screen-wrapper {
+  background-color: var(--color-background);
+  color: var(--color-text);
+
+  .msg-section-title,
+  .match-name,
+  .conv-name { color: var(--color-text); }
+
+  .conv-last-message,
+  .empty-conversations { color: var(--color-text-secondary); }
+
+  .msg-search-btn,
+  .msg-search-field input {
+    background: var(--color-section-gray);
+    border-color: var(--color-border);
+    color: var(--color-text);
+  }
+
+  .swipe-container { border-bottom-color: var(--color-border); }
+
+  .swipe-container.is-dragging .swipe-content,
+  .swipe-content.is-swiped { background-color: var(--color-background); }
+
+  .match-ring,
+  .likes-inner { background: var(--color-section-gray); }
 }
