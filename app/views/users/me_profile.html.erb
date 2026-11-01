@@ -36,10 +36,11 @@
         <% end %>
       </h2>
       
-      <%# Barra de completude do perfil — continua levando para a edição %>
+      <%# Barra de completude do perfil — continua levando para a edição.
+          Cor por faixa (UsersHelper): vermelho < 50%, laranja 50–99%, verde 100%. %>
       <% completion = @user.profile_completion_percentage %>
       <% complete = completion >= 100 %>
-      <%= link_to edit_profile_path, class: ["profile-completion", ("is-complete" if complete)], aria: { label: "Completar perfil: #{completion}% completo" } do %>
+      <%= link_to edit_profile_path, class: ["profile-completion", profile_completion_state_class(completion)], aria: { label: "Completar perfil: #{completion}% completo" } do %>
         <span class="profile-completion-label">
           <% if complete %>
             <svg class="profile-completion-check" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>

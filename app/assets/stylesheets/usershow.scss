@@ -234,6 +234,30 @@ html.dark-mode .profile-header-container .header-btn img {
   transition: width 0.4s ease, background 0.3s ease;
 }
 
+// Faixas de cor (classe vem de UsersHelper#profile_completion_state_class).
+// Textos em tons mais escuros que a barra para continuarem legíveis no fundo bege.
+
+// Abaixo de 50%: muito incompleto — vermelho
+.profile-completion.is-low {
+  .profile-completion-label { color: #b91c1c; font-weight: 600; }
+  .profile-completion-track { background-color: rgba(239, 68, 68, 0.18); }
+  .profile-completion-fill  { background: linear-gradient(90deg, #dc2626, #ef4444); }
+}
+
+// 50% a 99%: pela metade — laranja
+.profile-completion.is-half {
+  .profile-completion-label { color: #c2410c; font-weight: 600; }
+  .profile-completion-track { background-color: rgba(249, 115, 22, 0.18); }
+  .profile-completion-fill  { background: linear-gradient(90deg, #ea580c, #f97316); }
+}
+
+// Modo escuro: tons mais claros nos textos (os escuros somem no fundo preto)
+.dark-mode,
+html.dark:not(.light-mode) {
+  .profile-completion.is-low  .profile-completion-label { color: #f87171; }
+  .profile-completion.is-half .profile-completion-label { color: #fb923c; }
+}
+
 // 100%: tudo verde — mesmo tom do selo "Identidade Verificada!" (#22c55e)
 .profile-completion.is-complete {
   .profile-completion-label {
