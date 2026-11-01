@@ -1,22 +1,52 @@
 <div class="safety-wrapper">
 
+  <%# Fundo decorativo: rede de pontos e linhas (vermelho à esquerda, azul à direita) %>
+  <svg class="safety-network" viewBox="0 0 390 700" preserveAspectRatio="xMidYMin slice" aria-hidden="true">
+    <g class="net-red" stroke-width="0.8">
+      <line x1="0" y1="250" x2="70" y2="320"/><line x1="70" y1="320" x2="0" y2="400"/>
+      <line x1="70" y1="320" x2="140" y2="290"/><line x1="140" y1="290" x2="190" y2="255"/>
+      <line x1="190" y1="255" x2="280" y2="220"/><line x1="190" y1="255" x2="250" y2="320"/>
+      <line x1="280" y1="220" x2="250" y2="320"/><line x1="140" y1="290" x2="250" y2="320"/>
+      <line x1="0" y1="480" x2="60" y2="530"/><line x1="60" y1="530" x2="0" y2="600"/>
+      <line x1="60" y1="530" x2="20" y2="680"/><line x1="0" y1="640" x2="70" y2="690"/>
+      <circle cx="70" cy="320" r="2.5"/><circle cx="190" cy="255" r="2.5"/><circle cx="280" cy="220" r="4"/>
+      <circle cx="140" cy="290" r="2"/><circle cx="250" cy="320" r="2"/><circle cx="60" cy="530" r="3"/>
+      <circle cx="20" cy="680" r="2"/>
+    </g>
+    <g class="net-blue" stroke-width="0.8">
+      <line x1="280" y1="220" x2="340" y2="225"/><line x1="340" y1="225" x2="390" y2="190"/>
+      <line x1="340" y1="225" x2="375" y2="255"/><line x1="375" y1="255" x2="390" y2="300"/>
+      <line x1="340" y1="225" x2="320" y2="300"/><line x1="320" y1="300" x2="375" y2="255"/>
+      <line x1="320" y1="300" x2="390" y2="350"/><line x1="300" y1="160" x2="340" y2="225"/>
+      <line x1="320" y1="560" x2="390" y2="520"/><line x1="320" y1="560" x2="390" y2="620"/>
+      <circle cx="340" cy="225" r="3"/><circle cx="375" cy="255" r="2.5"/><circle cx="320" cy="300" r="2"/>
+      <circle cx="300" cy="160" r="2"/><circle cx="320" cy="560" r="2.5"/>
+    </g>
+  </svg>
+
   <%# --- 1. HEADER --- %>
   <div class="safety-header">
     <div class="header-top-row">
-      <%# Botão Voltar (Seta PNG) %>
-      <%= link_to my_profile_path, class: "btn-back" do %>
-        <%= image_tag "seta-esqueda-png.png", class: "icon-arrow" %>
+      <%= link_to my_profile_path, class: "btn-back", aria: { label: "Voltar" } do %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10.5"/>
+          <path d="M16.5 12H8M11.5 8l-4 4 4 4"/>
+        </svg>
       <% end %>
 
-      <%# Título e Subtítulo %>
       <div class="header-text-block">
-        <%= image_tag "texto-central-de-seguranca.png", class: "title-img" %>
+        <div class="title-wrap">
+          <%# Linha de batimento cardíaco atrás do título %>
+          <svg class="title-heartbeat" viewBox="0 0 340 90" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,40 150,40 160,30 170,40 182,40 192,2 202,78 212,40 340,40"/>
+          </svg>
+          <%= image_tag "texto-central-de-seguranca.png", class: "title-img", alt: "Central de Segurança" %>
+        </div>
         <p class="subtitle">Recursos e ferramentas para sua proteção</p>
       </div>
 
-      <%# Ícone Escudo (Direita) %>
       <div class="header-icon-right">
-        <%= image_tag "icone-central-de-seguranca.png", class: "icon-shield" %>
+        <%= image_tag "icone-central-de-seguranca.png", class: "icon-shield", alt: "" %>
       </div>
     </div>
   </div>
@@ -26,24 +56,23 @@
     <h3 class="section-label">Ações Rápidas</h3>
 
     <div class="cards-grid">
-      
-      <%# CARD 1: Polícia (Rosa) - Link para discar 190 %>
-<%= link_to "tel:190", class: "safety-card card-pink", style: "text-decoration: none;" do %>
-  <div class="card-icon-circle icon-red">
-     <%# Ícone de Telefone %>
-     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-  </div>
-  <div class="card-badge">!</div>
-  <div class="card-text">
-    <strong>Ações Rápidas</strong>
-    <span>Ligar 190</span>
-  </div>
-<% end %>
 
-    <%# CARD 2: Denúncias (LINK ATUALIZADO) %>
-      <%= link_to report_incident_path, class: "safety-card card-blue", style: "text-decoration: none;" do %>
+      <%# CARD 1: Polícia — disca 190 %>
+      <%= link_to "tel:190", class: "safety-card card-pink" do %>
+        <div class="card-badge">!</div>
+        <div class="card-icon-circle icon-red">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+        </div>
+        <div class="card-text">
+          <strong>Ações Rápidas</strong>
+          <span>Ligar 190</span>
+        </div>
+      <% end %>
+
+      <%# CARD 2: Denúncias %>
+      <%= link_to report_incident_path, class: "safety-card card-blue" do %>
         <div class="card-icon-circle icon-blue-dark">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
         </div>
         <div class="card-text">
           <strong>Denúncias Rápidas</strong>
@@ -51,45 +80,36 @@
         </div>
       <% end %>
 
-     <%# CARD 3: Compartilhar Localização (JavaScript) %>
-<button type="button" id="share-location-btn" class="safety-card card-purple" style="border: none; width: 100%; text-align: left; cursor: pointer; padding: 15px; display: flex; align-items: center; justify-content: flex-start; gap: 12px;">
-  
-  <div class="card-icon-circle icon-purple-dark" style="flex-shrink: 0;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-    </svg>
-  </div>
-  
-  <div class="card-text">
-    <strong style="display: block;">Compartilhar Local</strong>
-    <span style="display: block;">Enviar localização atual</span>
-  </div>
+      <%# CARD 3: Compartilhar Localização (JavaScript abaixo) %>
+      <button type="button" id="share-location-btn" class="safety-card card-purple card--left">
+        <div class="card-icon-circle icon-purple-dark">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 10h2v7h-2zM11 6.5h2v2h-2z"/></svg>
+        </div>
+        <div class="card-text">
+          <strong>Compartilhar Local</strong>
+          <span>Enviar localização atual</span>
+        </div>
+      </button>
 
-</button>
-
-      <%# CARD 4: Modo Pânico (Ajustado para Compartilhamento) %>
-<button type="button" id="panic-btn" class="safety-card card-pink-light" style="border: none; width: 100%; text-align: left; cursor: pointer; padding: 15px; display: flex; align-items: center; justify-content: flex-start; gap: 12px;">
-  
-  <div class="card-icon-circle icon-red-light">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22M12 6l7.53 13H4.47M11 10v4h2v-4m-2 6v2h2v-2"/></svg>
-  </div>
-  
-  <div class="card-text">
-    <strong id="panic-text-title">Modo Pânico</strong>
-    <span id="panic-text-status">Enviar alerta de emergência</span>
-  </div>
-</button>
+      <%# CARD 4: Modo Pânico (JavaScript abaixo) %>
+      <button type="button" id="panic-btn" class="safety-card card-pink-light card--left">
+        <div class="card-icon-circle icon-red-light">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5 2.5 20h19L12 3.5z"/><path d="M12 10v4.5M12 16.8v.2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="card-text">
+          <strong id="panic-text-title">Modo Pânico</strong>
+          <span id="panic-text-status">Enviar alerta de emergência</span>
+        </div>
+      </button>
 
     </div>
 
-    <%# --- CARD PREMIUM: HISTÓRICO (Bloqueados + Denúncias) --- %>
+    <%# --- HISTÓRICO (Bloqueados + Denúncias) --- %>
     <%= link_to safety_history_path, class: "safety-history-btn" do %>
       <div class="sh-btn-inner">
         <div class="sh-btn-left">
           <div class="sh-btn-icon-wrap">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
+            <%= image_tag "icone-central-de-seguranca.png", alt: "" %>
           </div>
           <div class="sh-btn-text">
             <strong>Bloqueados &amp; Denúncias</strong>
@@ -222,8 +242,11 @@
           // Link do Google Maps
           const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
           
-          // Sua mensagem personalizada
-          const messageText = `Olá! Esta é uma mensagem de alerta 🚨 do GeoMatch. Maria Clara ativou o modo de segurança e pode precisar da sua ajuda ou atenção. Por favor, entre em contato com ela o mais breve possível e acompanhe sua localização em tempo real aqui: ${mapUrl} Sua atenção é muito importante neste momento.`;
+          // Nome do usuário logado (to_json escapa aspas/caracteres especiais).
+          // Sem nome cadastrado, cai para um texto neutro.
+          const userName = <%= raw current_user.display_name.to_s.strip.to_json %> || "Um usuário do GeoMatch";
+
+          const messageText = `Olá! Esta é uma mensagem de alerta 🚨 do GeoMatch. ${userName} ativou o modo de segurança e pode precisar da sua ajuda ou atenção. Por favor, entre em contato o mais breve possível e acompanhe a localização em tempo real aqui: ${mapUrl} Sua atenção é muito importante neste momento.`;
 
           const shareData = {
             title: 'ALERTA DE SEGURANÇA - GeoMatch',
