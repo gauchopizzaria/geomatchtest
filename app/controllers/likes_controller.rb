@@ -11,7 +11,7 @@ class LikesController < ApplicationController
         format.turbo_stream { 
           render turbo_stream: turbo_stream.update("upgrade-modal-container", partial: "shared/upgrade_modal", locals: { type: 'likes' }) 
         }
-        format.html { redirect_to lead_path, alert: "Você atingiu seu limite de curtidas diárias." }
+        format.html { redirect_to return_path, alert: "Você atingiu seu limite de curtidas diárias." }
       end
       return
     end
@@ -23,7 +23,7 @@ class LikesController < ApplicationController
       if params[:source] == "map"
         return head :ok 
       else
-        return redirect_to lead_path, alert: "Você já curtiu este usuário."
+        return redirect_to return_path, alert: "Você já curtiu este usuário."
       end
     end
 
@@ -77,10 +77,10 @@ class LikesController < ApplicationController
                   left_avatar:  current_user.avatar.attached? ? url_for(current_user.avatar) : nil,
                   right_avatar: liked_user.avatar.attached?   ? url_for(liked_user.avatar)   : nil,
                   message_path: match_path(match),
-                  dismiss_path: lead_path
+                  dismiss_path: return_path
                 })
             end
-            format.html { redirect_to lead_path, notice: "Deu match! 🎉" }
+            format.html { redirect_to return_path, notice: "Deu match! 🎉" }
           end
         end
 
@@ -101,7 +101,7 @@ class LikesController < ApplicationController
           head :ok
         else
           # Se veio do swipe, recarrega a página para o próximo card
-          redirect_to lead_path, notice: "Curtida enviada!"
+          redirect_to return_path, notice: "Curtida enviada!"
         end
       end
 
@@ -110,7 +110,7 @@ class LikesController < ApplicationController
       if params[:source] == "map"
         head :unprocessable_entity
       else
-        redirect_to lead_path, alert: "Não foi possível registrar a curtida."
+        redirect_to return_path, alert: "Não foi possível registrar a curtida."
       end
     end
 
@@ -119,7 +119,15 @@ class LikesController < ApplicationController
     if params[:source] == "map"
       head :internal_server_error
     else
-      redirect_to lead_path, alert: "Erro interno no servidor."
+      redirect_to return_path, alert: "Erro interno no servidor."
     end
+  end
+
+  private
+
+  # "Curtir de volta" pela tela de Curtidas (source=likes) volta para ela —
+  # inclusive ao fechar o modal de match. Os demais fluxos seguem para o Início.
+  def return_path
+    params[:source] == "likes" ? notifications_path : lead_path
   end
 end

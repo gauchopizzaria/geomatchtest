@@ -46,9 +46,34 @@
     <%# ========================================================= %>
     <section class="likes-panel" data-likes-tabs-target="panel" data-panel="received">
       <% if received.any? %>
+        <%# --- Novas hoje: quem curtiu desde a meia-noite (fuso do app) --- %>
+        <% locked_received = !current_user.can_see_who_liked_me? %>
+        <% today = received.select { |n| n.created_at >= Time.zone.now.beginning_of_day } %>
+        <% if today.any? %>
+          <div class="likes-today">
+            <div class="likes-today-head">
+              <h2 class="likes-today-title">Novas hoje</h2>
+              <span class="likes-today-count"><%= today.size %> <%= today.size == 1 ? "nova" : "novas" %></span>
+            </div>
+            <div class="likes-today-row">
+              <% today.each do |notification| %>
+                <% person = notification.actor %>
+                <%# Plano que não mostra quem curtiu: avatar borrado e sem nome %>
+                <%= link_to (locked_received ? plans_path : user_path(person)), class: ["likes-today-item", ("locked" if locked_received)] do %>
+                  <span class="likes-today-ring"><%= image_tag person.avatar_url, alt: "" %></span>
+                  <span class="likes-today-name"><%= locked_received ? "Alguém" : person.display_name.split.first %></span>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
         <div class="likes-grid">
           <% received.each do |notification| %>
-            <%= render "notification", notification: notification %>
+            <%= render "notification",
+                       notification: notification,
+                       liked_back: @liked_back_ids.include?(notification.actor_id),
+                       match: @matches_by_user[notification.actor_id] %>
           <% end %>
         </div>
       <% else %>
@@ -66,38 +91,31 @@
         <div class="likes-grid">
           <% sent.each do |like| %>
             <% target_user = like.liked %>
-            <%# Verifica se o usuário atual tem permissão para ver quem ele curtiu %>
+            <% next unless target_user %>
+            <%# Plano que não mostra quem você curtiu: foto borrada, sem nome, link para os planos %>
             <% is_locked = !current_user.can_see_who_i_liked? %>
+            <% first_name = target_user.display_name.split.first %>
 
-            <% if target_user %>
-              <div class="like-card <%= 'locked' if is_locked %>">
-                <%# Destino: Plano (se bloqueado) ou Perfil (se liberado) %>
-                <% link_target = is_locked ? plans_path : user_path(target_user) %>
+            <div class="like-card <%= 'locked' if is_locked %>">
+              <%= image_tag target_user.avatar_url, class: "like-card-img", alt: "" %>
+              <div class="like-card-gradient"></div>
 
-                <%= link_to link_target, class: "like-card-link #{'trigger-upgrade-modal' if is_locked}" do %>
-                  <%= image_tag target_user.avatar_url, class: "like-card-img" %>
-
-                  <% if is_locked %>
-                    <div class="locked-overlay">
-                      <div class="locked-icon">🔒</div>
-                      <div class="locked-text">Upgrade</div>
-                    </div>
-                  <% else %>
-                    <div class="like-card-gradient"></div>
-
-                    <div class="like-card-info">
-                      <div class="user-details">
-                        <span class="name"><%= target_user.display_name.split.first %></span>
-                        <span class="age"><%= target_user.age rescue "" %></span>
-                      </div>
-                      <div class="distance-info">
-                        Enviado <%= time_ago_in_words(like.created_at) %> atrás
-                      </div>
-                    </div>
-                  <% end %>
+              <div class="like-card-info like-card-info--wide">
+                <% if is_locked %>
+                  <p class="like-card-name"><strong>Curtida enviada</strong></p>
+                  <p class="like-card-meta">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                    Ver quem você curtiu
+                  </p>
+                <% else %>
+                  <p class="like-card-name"><strong><%= first_name %></strong> <%= target_user.age %></p>
+                  <p class="like-card-meta">Enviado <%= time_ago_in_words(like.created_at) %> atrás</p>
                 <% end %>
               </div>
-            <% end %>
+
+              <%= link_to (is_locked ? plans_path : user_path(target_user)), class: "like-card-link",
+                          aria: { label: is_locked ? "Ver planos para descobrir quem você curtiu" : "Ver perfil de #{first_name}" } do %><% end %>
+            </div>
           <% end %>
         </div>
       <% else %>
@@ -109,3 +127,6 @@
 
   </div>
 </div>
+
+<%# Modal de limite de curtidas: LikesController responde com turbo_stream.update aqui %>
+<div id="upgrade-modal-container" style="position: relative; z-index: 99999;"></div>

@@ -110,15 +110,15 @@
 
 /* Quantas curtidas recebidas (só aparece quando há alguma) */
 .likes-tab-count {
-  min-width: 20px;
-  height: 20px;
+  min-width: 24px;
+  height: 24px;
   padding: 0 6px;
-  border-radius: 10px;
-  background: #c9a052;
+  border-radius: 12px;
+  background: #1c1c1c;
   color: #fff;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
-  line-height: 20px;
+  line-height: 24px;
 }
 
 .likes-panel {
@@ -151,117 +151,267 @@
   }
 }
 
-/* --- 3. GRID DE CARDS --- */
+/* --- 3. NOVAS HOJE (quem curtiu desde a meia-noite) --- */
+.likes-today {
+  margin-bottom: 20px;
+  margin-top: -3px;
+}
+
+.likes-today-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+
+.likes-today-title {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #1c1c1c;
+}
+
+.likes-today-count {
+  font-size: 12.5px;
+  color: #6b6560;
+}
+
+.likes-today-row {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.likes-today-item {
+  flex-shrink: 0;
+  width: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5.5px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Anel verde + respiro creme em volta da foto */
+.likes-today-ring {
+  width: 56px;
+  height: 56px;
+  padding: 1.5px;
+  border: 2.5px solid #2f7d68;
+  border-radius: 50%;
+  background: #f8f2e8;
+  box-sizing: border-box;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+.likes-today-item.locked .likes-today-ring img {
+  filter: blur(6px);
+  transform: scale(1.15);
+}
+
+.likes-today-name {
+  max-width: 64px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1c1c1c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* --- 4. GRID DE CARDS --- */
 .likes-grid {
   display: grid;
   grid-template-columns: 1fr 1fr; /* 2 Colunas */
   gap: 12px;
 }
 
-/* ESTILO DO CARD */
+/* Card: foto, gradiente, infos, link "esticado" (z 2) e coração por cima (z 3) */
 .like-card {
   position: relative;
-  aspect-ratio: 3 / 4; /* Formato retrato */
-  border-radius: 12px;
+  aspect-ratio: 169 / 236;
+  border-radius: 20px;
   overflow: hidden;
-  background-color: var(--color-section-gray);
-}
-
-.like-card-link {
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-decoration: none;
-  color: inherit;
+  background-color: #cbb79c;
+  isolation: isolate;
 }
 
 .like-card-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* Gradiente para leitura do texto */
 .like-card-gradient {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 60%;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-  z-index: 1;
+  inset: 45% 0 0 0;
+  background: linear-gradient(to bottom, rgba(36, 26, 20, 0) 0%, rgba(36, 26, 20, 0.88) 100%);
+  pointer-events: none;
 }
 
-/* Info do Usuário */
-.like-card-info {
+.like-card-link {
   position: absolute;
-  bottom: 12px;
-  left: 10px;
-  right: 10px;
+  inset: 0;
   z-index: 2;
-  text-align: left;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.location-badge-small {
+.like-card-online {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(30, 144, 120, 0.9);
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-  color: #fff;
-}
-
-.user-details {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 2px;
-
-  .name {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #fff;
-  }
-  
-  .age {
-    font-size: 1rem;
-    font-weight: 400;
-    color: #fff;
-  }
-}
-
-.verified-icon-small {
-  width: 14px;
-  height: 14px;
-}
-
-.distance-info {
-  font-size: 0.7rem;
-  color: #ccc;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Ícone de Ação (Canto direito) */
-.like-action-icon {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  z-index: 3;
-  width: 24px;
+  gap: 5px;
   height: 24px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-  
-  img {
-    width: 100%;
-    height: 100%;
-    filter: brightness(0) invert(1); /* Ícone branco */
+  padding: 0 9.5px 0 8.5px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #1c1c1c;
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.like-card-online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1f9d55;
+}
+
+.like-card-info {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 14px;
+  z-index: 1;
+  color: #fff;
+  pointer-events: none;
+}
+
+.like-card-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+
+  strong {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+}
+
+.like-card-verified {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+
+  circle { fill: #3b82f6; }
+  path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+/* Distância/legenda: não passa por baixo do coração (quebra linha como no mockup) */
+.like-card-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 4.5px;
+  margin: 0;
+  padding-right: 46px;
+  font-size: 12px;
+  line-height: 1.15;
+  color: rgba(255, 255, 255, 0.92);
+
+  svg {
+    flex-shrink: 0;
+    width: 10px;
+    height: 12px;
+    margin-top: 1px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+/* Cards sem coração ("Você curtiu") usam a largura toda */
+.like-card-info--wide .like-card-meta { padding-right: 0; }
+
+/* Coração "curtir de volta" */
+.like-card-heart-form { margin: 0; }
+
+.like-card-heart {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease;
+
+  &:active { transform: scale(0.92); }
+}
+
+.like-card-heart-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #1c1c1c;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Já curtiu de volta (e, se deu match, o coração abre a conversa) */
+.like-card-heart.is-liked .like-card-heart-icon {
+  fill: #c9a052;
+  stroke: #c9a052;
+}
+
+/* Plano que não mostra quem curtiu: foto borrada */
+.like-card.locked .like-card-img {
+  filter: blur(12px);
+  transform: scale(1.1);
 }
 
 /* --- 4. ESTADO VAZIO (radar com o seu ponto no centro) --- */
@@ -459,107 +609,10 @@ html.dark:not(.light-mode) {
   .likes-radar-center svg { stroke: var(--color-text); }
 
   .likes-empty-link { color: var(--color-primary); }
-}
 
-
-/* --- EFEITO BLUR PARA PLANO FREE --- */
-
-.like-card.locked {
-  cursor: pointer; /* Indica que é clicável (para abrir o upgrade) */
-}
-
-/* O Desfoque na Imagem */
-.like-card.locked .like-card-img {
-  filter: blur(8px); /* Desfoque forte */
-  transform: scale(1.2); /* Zoom leve para evitar bordas brancas no blur */
-}
-
-/* Ícone de Cadeado sobreposto (Opcional, mas recomendado) */
-.locked-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  width: 100%;
-}
-
-.locked-icon {
-  font-size: 2rem;
-  margin-bottom: 5px;
-  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
-}
-
-.locked-text {
-  font-size: 0.8rem;
-  color: #fff;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-}
-
-/* =========================================================
-   ATUALIZAÇÃO: REMOVER CADEADO E MOSTRAR IDADE (BLUR)
-   ========================================================= */
-
-/* 1. Removemos o ícone de cadeado antigo se ele ainda existir no CSS */
-.locked-overlay {
-  display: none !important;
-}
-
-/* 2. Mantemos o Blur na imagem */
-.like-card.locked .like-card-img {
-  filter: blur(12px); /* Aumentei um pouco para garantir privacidade */
-  transform: scale(1.1);
-}
-
-/* 3. Estilo da Pílula de Idade (Estilo da referência) */
-.locked-pill-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.age-pill {
-  background-color: rgba(255, 255, 255, 0.2); /* Fundo cinza translúcido */
-  backdrop-filter: blur(4px);
-  border-radius: 12px;
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.age-val {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-/* Bolinha indicadora (verde ou azul conforme referência) */
-.status-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #4ade80; /* Verde online */
-  border-radius: 50%;
-  box-shadow: 0 0 5px rgba(74, 222, 128, 0.6);
-}
-
-/* Texto descritivo abaixo da idade */
-.locked-hint {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #ccc;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  .likes-tab-count { background: var(--color-text); color: #121212; }
+  .likes-today-title,
+  .likes-today-name { color: var(--color-text); }
+  .likes-today-count { color: var(--color-text-secondary); }
+  .likes-today-ring { background: var(--color-background); }
 }
